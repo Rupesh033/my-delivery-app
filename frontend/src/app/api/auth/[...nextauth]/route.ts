@@ -3,20 +3,20 @@ import GoogleProvider from "next-auth/providers/google";
 
 console.log('NextAuth Debug:', {
     hasId: !!process.env.GOOGLE_CLIENT_ID,
-    idLength: process.env.GOOGLE_CLIENT_ID?.length,
-    idEnd: process.env.GOOGLE_CLIENT_ID?.slice(-10),
+    idLength: process.env.GOOGLE_CLIENT_ID?.trim().length,
+    idEnd: process.env.GOOGLE_CLIENT_ID?.trim().slice(-10),
     hasSecret: !!process.env.GOOGLE_CLIENT_SECRET,
-    secretLength: process.env.GOOGLE_CLIENT_SECRET?.length
+    secretLength: process.env.GOOGLE_CLIENT_SECRET?.trim().length
 });
 
 const handler = NextAuth({
     providers: [
         GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID || "",
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+            clientId: (process.env.GOOGLE_CLIENT_ID || "").trim(),
+            clientSecret: (process.env.GOOGLE_CLIENT_SECRET || "").trim(),
         }),
     ],
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: (process.env.NEXTAUTH_SECRET || "").trim(),
     pages: {
         signIn: '/login',
     },
