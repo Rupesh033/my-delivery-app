@@ -16,6 +16,7 @@ export default function CustomerPage() {
     const [drop, setDrop] = useState('');
     const [fare, setFare] = useState(0);
     const [rideData, setRideData] = useState<any>(null);
+    const [socketConnected, setSocketConnected] = useState(false);
     const [riderCoords, setRiderCoords] = useState<[number, number] | undefined>(undefined);
 
     // Mock coordinates for Garhwa, Jharkhand
@@ -23,15 +24,22 @@ export default function CustomerPage() {
     const [dropCoords] = useState<[number, number]>([24.1750, 83.8200]);
 
     useEffect(() => {
-        console.log('Connecting to socket at:', process.env.NEXT_PUBLIC_BACKEND_URL);
+        console.log('CustomerPage Mounting - Initializing socket');
         socket.connect();
 
         socket.on('connect', () => {
             console.log('Socket connected successfully! ID:', socket.id);
+            setSocketConnected(true);
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Socket disconnected');
+            setSocketConnected(false);
         });
 
         socket.on('connect_error', (err) => {
             console.error('Socket connection error:', err);
+            setSocketConnected(false);
         });
 
         socket.on('newRideRequest', (ride) => {
@@ -53,7 +61,13 @@ export default function CustomerPage() {
         });
 
         return () => {
-            socket.disconnect();
+            socket.off('connect');
+            socket.off('disconnect');
+            socket.off('connect_error');
+            socket.off('newRideRequest');
+            socket.off('rideAccepted');
+            socket.off('rideStarted');
+            socket.off('riderLocationUpdate');
         };
     }, []);
 
@@ -83,7 +97,10 @@ export default function CustomerPage() {
             <header className="mb-8 flex justify-between items-start">
                 <div>
                     <h1 className="text-3xl font-extrabold rapido-gradient text-black inline-block px-4 py-1 rounded">Rapido</h1>
-                    <p className="text-gray-400 mt-2 text-sm">Where are you going today?</p>
+                    <div className="flex items-center gap-2 mt-2">
+                        <div className={`w-2 h-2 rounded-full ${socketConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                        <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">{socketConnected ? 'Live Connection Active' : 'Connecting to Server...'}</p>
+                    </div>
                 </div>
                 {session ? (
                     <div className="flex flex-col items-end gap-2">

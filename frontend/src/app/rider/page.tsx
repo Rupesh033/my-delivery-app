@@ -9,6 +9,7 @@ const MapComponent = dynamic(() => import('@/components/MapComponent'), { ssr: f
 export default function RiderPage() {
     const [online, setOnline] = useState(false);
     const onlineRef = useRef(online);
+    const [socketConnected, setSocketConnected] = useState(false);
     const [activeRide, setActiveRide] = useState<any>(null);
     const [isAccepted, setIsAccepted] = useState(false);
     const [otp, setOtp] = useState('');
@@ -20,15 +21,22 @@ export default function RiderPage() {
     }, [online]);
 
     useEffect(() => {
-        console.log('Connecting to socket at:', process.env.NEXT_PUBLIC_BACKEND_URL);
+        console.log('Mounting RiderPage - Initializing socket');
         socket.connect();
 
         socket.on('connect', () => {
             console.log('Rider Socket connected! ID:', socket.id);
+            setSocketConnected(true);
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Rider Socket disconnected');
+            setSocketConnected(false);
         });
 
         socket.on('connect_error', (err) => {
             console.error('Rider Socket connection error:', err);
+            setSocketConnected(false);
         });
 
         socket.on('newRideRequest', (ride: any) => {
@@ -53,7 +61,18 @@ export default function RiderPage() {
             setError(data.message);
         });
 
-        // Broadcast location every 5s if online
+        return () => {
+            socket.off('connect');
+            socket.off('disconnect');
+            socket.off('connect_error');
+            socket.off('newRideRequest');
+            socket.off('rideStarted');
+            socket.off('otpError');
+        };
+    }, []);
+
+    // Location update loop
+    useEffect(() => {
         const interval = setInterval(() => {
             if (online) {
                 const lat = 24.1627 + (Math.random() - 0.5) * 0.01;
@@ -65,11 +84,7 @@ export default function RiderPage() {
                 });
             }
         }, 5000);
-
-        return () => {
-            socket.disconnect();
-            clearInterval(interval);
-        };
+        return () => clearInterval(interval);
     }, [online]);
 
     const handleAccept = () => {
@@ -97,12 +112,16 @@ export default function RiderPage() {
             <header className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-2xl font-black">RIDER HUB</h1>
-                    <p className="text-gray-500 text-sm">Welcome back, Rupesh</p>
+                    <div className="flex items-center gap-2 mt-1">
+                        <div className={`w-2 h-2 rounded-full ${socketConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                        <p className="text-[10px] text-gray-500 uppercase font-bold">{socketConnected ? 'Server Connected' : 'Connecting...'}</p>
+                    </div>
                 </div>
                 <button
                     onClick={() => {
                         const newStatus = !online;
                         setOnline(newStatus);
+                        console.log('Rider toggling status to:', newStatus ? 'ONLINE' : 'OFFLINE');
                         socket.emit(newStatus ? 'goOnline' : 'goOffline', { riderId: 'R1' });
                     }}
                     className={`px-4 py-2 rounded-full font-bold transition-colors ${online ? 'bg-green-500 text-black' : 'bg-gray-800 text-gray-400'}`}
