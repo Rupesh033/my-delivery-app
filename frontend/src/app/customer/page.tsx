@@ -152,7 +152,7 @@ export default function CustomerPage() {
                     <div className="p-4 bg-[var(--secondary)] rounded-xl border border-[var(--border)] mb-6">
                         <p className="text-xs text-gray-500 uppercase mb-2">OTP for your ride</p>
                         <p className="text-4xl font-black tracking-widest text-[var(--primary)] text-center">
-                            {rideData?.otp?.split('').join(' ')}
+                            {rideData?.otp ? rideData.otp.split('').join(' ') : '----'}
                         </p>
                     </div>
                     <div className="h-64 bg-[#222] rounded-xl overflow-hidden mb-4">

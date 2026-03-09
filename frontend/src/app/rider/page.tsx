@@ -8,11 +8,16 @@ const MapComponent = dynamic(() => import('@/components/MapComponent'), { ssr: f
 
 export default function RiderPage() {
     const [online, setOnline] = useState(false);
+    const onlineRef = useRef(online);
     const [activeRide, setActiveRide] = useState<any>(null);
     const [isAccepted, setIsAccepted] = useState(false);
     const [otp, setOtp] = useState('');
     const [onRide, setOnRide] = useState(false);
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        onlineRef.current = online;
+    }, [online]);
 
     useEffect(() => {
         console.log('Connecting to socket at:', process.env.NEXT_PUBLIC_BACKEND_URL);
@@ -27,8 +32,8 @@ export default function RiderPage() {
         });
 
         socket.on('newRideRequest', (ride: any) => {
-            console.log('Received new ride request:', ride);
-            if (online) {
+            console.log('Received new ride request:', ride, 'Online Status:', onlineRef.current);
+            if (onlineRef.current) {
                 console.log('Rider is online, showing request.');
                 setActiveRide(ride);
                 setIsAccepted(false);
