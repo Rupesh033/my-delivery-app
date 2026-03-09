@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zomato Rider - Delivery Partner App</title>
+    <meta name="description" content="Zomato Rider App - Manage your deliveries, track earnings, and grow your income">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen active">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="logo-container">
+                    <svg class="logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#E23744;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#FF6B6B;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="100" cy="100" r="90" fill="url(#logoGradient)"/>
+                        <path d="M60 80 L100 120 L140 80" stroke="white" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="100" cy="140" r="8" fill="white"/>
+                    </svg>
+                </div>
+                <h1 class="app-title">Zomato Rider</h1>
+                <p class="app-subtitle">Deliver happiness, earn more</p>
+            </div>
+            
+            <div class="login-form">
+                <div class="input-group">
+                    <label for="phoneNumber">Phone Number</label>
+                    <div class="phone-input">
+                        <span class="country-code">+91</span>
+                        <input type="tel" id="phoneNumber" placeholder="Enter your number" maxlength="10" pattern="[0-9]{10}">
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" id="loginBtn">
+                    <span>Continue</span>
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M5 12h14M12 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                
+                <div class="login-footer">
+                    <p>By continuing, you agree to our</p>
+                    <a href="#" class="link">Terms of Service</a> & <a href="#" class="link">Privacy Policy</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="screen">
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <svg class="nav-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="navLogoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#E23744;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#FF6B6B;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="100" cy="100" r="90" fill="url(#navLogoGradient)"/>
+                        <path d="M60 80 L100 120 L140 80" stroke="white" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="100" cy="140" r="8" fill="white"/>
+                    </svg>
+                    <span class="nav-title">Rider</span>
+                </div>
+                <div class="nav-actions">
+                    <button class="nav-btn" id="notificationBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="notification-badge">3</span>
+                    </button>
+                    <button class="nav-btn" id="profileBtn">
+                        <div class="profile-avatar">
+                            <span>RV</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard View -->
+            <div id="dashboardView" class="view active">
+                <!-- Status Card -->
+                <div class="status-card">
+                    <div class="status-header">
+                        <div class="status-indicator online"></div>
+                        <span class="status-text">You're Online</span>
+                    </div>
+                    <button class="toggle-status-btn" id="toggleStatusBtn">Go Offline</button>
+                </div>
+
+                <!-- Earnings Summary -->
+                <div class="earnings-summary">
+                    <h2 class="section-title">Today's Earnings</h2>
+                    <div class="earnings-grid">
+                        <div class="earning-card">
+                            <div class="earning-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                                    <path d="M12 6v6l4 2" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="earning-info">
+                                <p class="earning-label">Total Earnings</p>
+                                <h3 class="earning-value">₹1,240</h3>
+                            </div>
+                        </div>
+                        
+                        <div class="earning-card">
+                            <div class="earning-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="earning-info">
+                                <p class="earning-label">Deliveries</p>
+                                <h3 class="earning-value">12</h3>
+                            </div>
+                        </div>
+                        
+                        <div class="earning-card">
+                            <div class="earning-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="earning-info">
+                                <p class="earning-label">Distance</p>
+                                <h3 class="earning-value">45 km</h3>
+                            </div>
+                        </div>
+                        
+                        <div class="earning-card">
+                            <div class="earning-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="earning-info">
+                                <p class="earning-label">Tips</p>
+                                <h3 class="earning-value">₹180</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Orders -->
+                <div class="orders-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Active Orders</h2>
+                        <span class="order-count">2 orders</span>
+                    </div>
+                    
+                    <div class="orders-list" id="activeOrdersList">
+                        <!-- Order cards will be dynamically added -->
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <h2 class="section-title">Quick Actions</h2>
+                    <div class="actions-grid">
+                        <button class="action-card" data-action="earnings">
+                            <div class="action-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="action-label">Earnings</span>
+                        </button>
+                        
+                        <button class="action-card" data-action="history">
+                            <div class="action-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M3 3h18v18H3zM3 9h18M9 21V9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="action-label">History</span>
+                        </button>
+                        
+                        <button class="action-card" data-action="support">
+                            <div class="action-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="action-label">Support</span>
+                        </button>
+                        
+                        <button class="action-card" data-action="settings">
+                            <div class="action-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <circle cx="12" cy="12" r="3" stroke-width="2"/>
+                                    <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <span class="action-label">Settings</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Detail View -->
+            <div id="orderDetailView" class="view">
+                <div class="view-header">
+                    <button class="back-btn" id="backToOrders">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M19 12H5M12 19l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <h2>Order Details</h2>
+                </div>
+                
+                <div id="orderDetailContent">
+                    <!-- Order details will be dynamically loaded -->
+                </div>
+            </div>
+
+            <!-- Earnings View -->
+            <div id="earningsView" class="view">
+                <div class="view-header">
+                    <button class="back-btn" id="backFromEarnings">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M19 12H5M12 19l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <h2>Earnings</h2>
+                </div>
+                
+                <div class="earnings-content">
+                    <div class="earnings-header">
+                        <div class="total-earnings">
+                            <p class="earnings-period">This Week</p>
+                            <h1 class="earnings-amount">₹8,450</h1>
+                            <p class="earnings-growth">
+                                <span class="growth-indicator positive">↑ 12%</span>
+                                vs last week
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="earnings-breakdown">
+                        <h3 class="subsection-title">Breakdown</h3>
+                        <div class="breakdown-list">
+                            <div class="breakdown-item">
+                                <div class="breakdown-info">
+                                    <span class="breakdown-label">Base Fare</span>
+                                    <span class="breakdown-value">₹6,200</span>
+                                </div>
+                                <div class="breakdown-bar">
+                                    <div class="breakdown-fill" style="width: 73%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="breakdown-item">
+                                <div class="breakdown-info">
+                                    <span class="breakdown-label">Tips</span>
+                                    <span class="breakdown-value">₹1,250</span>
+                                </div>
+                                <div class="breakdown-bar">
+                                    <div class="breakdown-fill" style="width: 15%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="breakdown-item">
+                                <div class="breakdown-info">
+                                    <span class="breakdown-label">Incentives</span>
+                                    <span class="breakdown-value">₹1,000</span>
+                                </div>
+                                <div class="breakdown-bar">
+                                    <div class="breakdown-fill" style="width: 12%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="earnings-history">
+                        <h3 class="subsection-title">Recent Transactions</h3>
+                        <div class="transaction-list" id="transactionList">
+                            <!-- Transactions will be dynamically added -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile View -->
+            <div id="profileView" class="view">
+                <div class="view-header">
+                    <button class="back-btn" id="backFromProfile">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M19 12H5M12 19l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <h2>Profile</h2>
+                </div>
+                
+                <div class="profile-content">
+                    <div class="profile-header">
+                        <div class="profile-avatar-large">
+                            <span>RV</span>
+                        </div>
+                        <h2 class="profile-name">Rupesh Vishwakarma</h2>
+                        <p class="profile-id">Rider ID: ZR2024001</p>
+                        <div class="profile-rating">
+                            <svg class="star-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            <span class="rating-value">4.8</span>
+                            <span class="rating-count">(1,234 ratings)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <p class="stat-value">2,456</p>
+                            <p class="stat-label">Total Deliveries</p>
+                        </div>
+                        <div class="stat-item">
+                            <p class="stat-value">98%</p>
+                            <p class="stat-label">On-time Rate</p>
+                        </div>
+                        <div class="stat-item">
+                            <p class="stat-value">156</p>
+                            <p class="stat-label">Days Active</p>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-menu">
+                        <button class="menu-item">
+                            <div class="menu-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <span class="menu-item-label">Personal Information</span>
+                            <svg class="menu-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M9 18l6-6-6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        
+                        <button class="menu-item">
+                            <div class="menu-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke-width="2"/>
+                                    <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <span class="menu-item-label">Documents</span>
+                            <svg class="menu-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M9 18l6-6-6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        
+                        <button class="menu-item">
+                            <div class="menu-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" stroke-width="2"/>
+                                    <path d="M17 21v-8H7v8M7 3v5h8" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <span class="menu-item-label">Bank Details</span>
+                            <svg class="menu-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M9 18l6-6-6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        
+                        <button class="menu-item">
+                            <div class="menu-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <circle cx="12" cy="12" r="3" stroke-width="2"/>
+                                    <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <span class="menu-item-label">Settings</span>
+                            <svg class="menu-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M9 18l6-6-6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        
+                        <button class="menu-item logout">
+                            <div class="menu-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="menu-item-label">Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-view="dashboard">
+                <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9 22V12h6v10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="nav-item-label">Home</span>
+            </button>
+            
+            <button class="nav-item" data-view="orders">
+                <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 6h18M16 10a4 4 0 0 1-8 0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="nav-item-label">Orders</span>
+            </button>
+            
+            <button class="nav-item" data-view="earnings">
+                <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="nav-item-label">Earnings</span>
+            </button>
+            
+            <button class="nav-item" data-view="profile">
+                <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="nav-item-label">Profile</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Order Notification Modal -->
+    <div id="orderNotificationModal" class="modal">
+        <div class="modal-content order-notification">
+            <div class="notification-header">
+                <div class="notification-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke-width="2"/>
+                    </svg>
+                </div>
+                <h3>New Order!</h3>
+            </div>
+            
+            <div class="notification-body" id="notificationBody">
+                <!-- Order details will be dynamically added -->
+            </div>
+            
+            <div class="notification-actions">
+                <button class="btn btn-secondary" id="rejectOrderBtn">Reject</button>
+                <button class="btn btn-primary" id="acceptOrderBtn">Accept</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
