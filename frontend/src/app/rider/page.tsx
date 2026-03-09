@@ -95,7 +95,11 @@ export default function RiderPage() {
                     <p className="text-gray-500 text-sm">Welcome back, Rupesh</p>
                 </div>
                 <button
-                    onClick={() => setOnline(!online)}
+                    onClick={() => {
+                        const newStatus = !online;
+                        setOnline(newStatus);
+                        socket.emit(newStatus ? 'goOnline' : 'goOffline', { riderId: 'R1' });
+                    }}
                     className={`px-4 py-2 rounded-full font-bold transition-colors ${online ? 'bg-green-500 text-black' : 'bg-gray-800 text-gray-400'}`}
                 >
                     {online ? 'ONLINE' : 'OFFLINE'}

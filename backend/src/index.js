@@ -48,7 +48,31 @@ io.on('connection', (socket) => {
 
     socket.on('updateLocation', (data) => {
         // data: { riderId, lat, lng }
+        const { riderId, lat, lng } = data;
+        const rider = mockDb.riders.find(r => r.id === riderId);
+        if (rider) {
+            rider.lat = lat;
+            rider.lng = lng;
+            rider.isOnline = true; // Mark as online when they send location
+            socket.join('riders'); // Ensure they are in the riders room
+        }
         socket.broadcast.emit('riderLocationUpdate', data);
+    });
+
+    socket.on('goOnline', (data) => {
+        const { riderId } = data;
+        const rider = mockDb.riders.find(r => r.id === riderId);
+        if (rider) rider.isOnline = true;
+        socket.join('riders');
+        console.log(`Rider ${riderId} is now ONLINE`);
+    });
+
+    socket.on('goOffline', (data) => {
+        const { riderId } = data;
+        const rider = mockDb.riders.find(r => r.id === riderId);
+        if (rider) rider.isOnline = false;
+        socket.leave('riders');
+        console.log(`Rider ${riderId} is now OFFLINE`);
     });
 
     socket.on('acceptRide', (data) => {
