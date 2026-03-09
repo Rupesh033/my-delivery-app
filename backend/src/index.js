@@ -30,14 +30,16 @@ app.post('/api/rides/book', (req, res) => {
 
     const ride = RideService.createRide(userId, pickup, drop, fare);
 
-    // Find nearest rider
+    // Find nearest rider (mocked logic)
     const rider = RideService.findNearestRider(pickup);
     if (rider) {
-        console.log('Broadcasting ride request to all riders...');
-        io.emit('newRideRequest', ride);
+        console.log(`Rider ${rider.id} found online. Broadcasting ride request.`);
     } else {
-        console.log('No online riders found for broadcast.');
+        console.log('No riders currently online. Request will be queued for when they connect.');
     }
+
+    // Always broadcast so if a rider is connecting right now, they might catch it
+    io.emit('newRideRequest', ride);
 
     res.status(201).json({ ride, rider });
 });
@@ -65,6 +67,13 @@ io.on('connection', (socket) => {
         if (rider) rider.isOnline = true;
         socket.join('riders');
         console.log(`Rider ${riderId} is now ONLINE`);
+
+        // Push any currently pending requests to the newly online rider
+        const pendingRides = mockDb.rides.filter(r => r.status === 'searching');
+        pendingRides.forEach(ride => {
+            console.log(`Sending pending ride ${ride.id} to newly online rider ${riderId}`);
+            socket.emit('newRideRequest', ride);
+        });
     });
 
     socket.on('goOffline', (data) => {
