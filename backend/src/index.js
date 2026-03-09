@@ -30,8 +30,9 @@ app.post('/api/rides/book', (req, res) => {
     // Find nearest rider
     const rider = RideService.findNearestRider(pickup);
     if (rider) {
-        // Notify rider via socket (to be implemented)
-        io.to(rider.id).emit('newRideRequest', ride);
+        // Broadcast to all connected clients.
+        // Online riders will handle the visibility check.
+        io.emit('newRideRequest', ride);
     }
 
     res.status(201).json({ ride, rider });

@@ -5,8 +5,8 @@
 
 const mockDb = {
     riders: [
-        { id: '1', name: 'Rupesh', role: 'rider', isOnline: true, lat: 12.9716, lng: 77.5946, vehicle: 'Bike' },
-        { id: '2', name: 'Amit', role: 'rider', isOnline: false, lat: 12.9720, lng: 77.5950, vehicle: 'Scooter' }
+        { id: 'R1', name: 'Rupesh', role: 'rider', isOnline: true, lat: 24.1627, lng: 83.8055, vehicle: 'Bike' },
+        { id: 'R2', name: 'Amit', role: 'rider', isOnline: false, lat: 24.1750, lng: 83.8200, vehicle: 'Scooter' }
     ],
     rides: [],
     users: [
