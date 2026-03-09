@@ -39,8 +39,8 @@ export default function CustomerPage() {
         });
 
         socket.on('rideAccepted', (data) => {
-            console.log('Ride accepted by rider:', data.riderId);
-            setRideData(data.ride);
+            console.log('Ride accepted by rider:', data.riderId, 'Full Data:', data.ride);
+            setRideData(data.ride); // This now contains the OTP from the backend
             setStep('booked');
         });
 

@@ -58,6 +58,7 @@ io.on('connection', (socket) => {
         // Update ride status in service
         const ride = RideService.updateRideStatus(rideId, 'accepted', riderId);
 
+        console.log(`Broadcasting rideAccepted for ride ${rideId} to all clients. OTP: ${ride?.otp}`);
         // Notify all clients that the ride is accepted 
         // In a real app, we would notify only the specific customer
         io.emit('rideAccepted', { rideId, riderId, ride });
