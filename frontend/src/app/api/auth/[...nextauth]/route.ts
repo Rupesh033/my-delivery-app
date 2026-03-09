@@ -1,7 +1,13 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
-console.log('NextAuth ID Prefix:', process.env.GOOGLE_CLIENT_ID?.slice(0, 5));
+console.log('NextAuth Debug:', {
+    hasId: !!process.env.GOOGLE_CLIENT_ID,
+    idLength: process.env.GOOGLE_CLIENT_ID?.length,
+    idEnd: process.env.GOOGLE_CLIENT_ID?.slice(-10),
+    hasSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+    secretLength: process.env.GOOGLE_CLIENT_SECRET?.length
+});
 
 const handler = NextAuth({
     providers: [
