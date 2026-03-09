@@ -30,6 +30,7 @@ export default function CustomerPage() {
         });
 
         socket.on('rideAccepted', (data) => {
+            console.log('Ride accepted by rider:', data.riderId);
             setRideData(data.ride);
             setStep('booked');
         });
@@ -48,14 +49,24 @@ export default function CustomerPage() {
     }, []);
 
     const handleBook = async () => {
+        console.log('Initiating ride search...', { pickup, drop, fare });
         setStep('searching');
-        // Register ride request with backend
+
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-        fetch(`${backendUrl}/api/rides/book`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: 'U1', pickup, drop, fare })
-        });
+        console.log('Using backend URL:', backendUrl);
+
+        try {
+            const resp = await fetch(`${backendUrl}/api/rides/book`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: session?.user?.email || 'U1', pickup, drop, fare })
+            });
+            const data = await resp.json();
+            console.log('Ride book response:', data);
+        } catch (err) {
+            console.error('Ride booking failed:', err);
+            alert('Rider booking service currently unavailable. Please try again.');
+        }
     };
 
     return (

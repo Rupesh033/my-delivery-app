@@ -19,20 +19,24 @@ app.use(express.json());
 
 // Basic Route
 app.get('/', (req, res) => {
+    console.log('Health check received');
     res.send('Rapido-Like Platform API is running');
 });
 
 // Ride Booking Endpoint
 app.post('/api/rides/book', (req, res) => {
     const { userId, pickup, drop, fare } = req.body;
+    console.log(`Booking request received from ${userId}: ${pickup} to ${drop}`);
+
     const ride = RideService.createRide(userId, pickup, drop, fare);
 
     // Find nearest rider
     const rider = RideService.findNearestRider(pickup);
     if (rider) {
-        // Broadcast to all connected clients.
-        // Online riders will handle the visibility check.
+        console.log('Broadcasting ride request to all riders...');
         io.emit('newRideRequest', ride);
+    } else {
+        console.log('No online riders found for broadcast.');
     }
 
     res.status(201).json({ ride, rider });

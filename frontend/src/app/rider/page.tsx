@@ -18,12 +18,16 @@ export default function RiderPage() {
         socket.connect();
 
         socket.on('newRideRequest', (ride: any) => {
+            console.log('Received new ride request:', ride);
             if (online) {
+                console.log('Rider is online, showing request.');
                 setActiveRide(ride);
                 setIsAccepted(false);
                 setOnRide(false);
                 setOtp('');
                 setError('');
+            } else {
+                console.log('Rider is offline, ignoring request.');
             }
         });
 
