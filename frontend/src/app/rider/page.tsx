@@ -15,7 +15,16 @@ export default function RiderPage() {
     const [error, setError] = useState('');
 
     useEffect(() => {
+        console.log('Connecting to socket at:', process.env.NEXT_PUBLIC_BACKEND_URL);
         socket.connect();
+
+        socket.on('connect', () => {
+            console.log('Rider Socket connected! ID:', socket.id);
+        });
+
+        socket.on('connect_error', (err) => {
+            console.error('Rider Socket connection error:', err);
+        });
 
         socket.on('newRideRequest', (ride: any) => {
             console.log('Received new ride request:', ride);

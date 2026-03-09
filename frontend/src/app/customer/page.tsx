@@ -23,7 +23,16 @@ export default function CustomerPage() {
     const [dropCoords] = useState<[number, number]>([24.1750, 83.8200]);
 
     useEffect(() => {
+        console.log('Connecting to socket at:', process.env.NEXT_PUBLIC_BACKEND_URL);
         socket.connect();
+
+        socket.on('connect', () => {
+            console.log('Socket connected successfully! ID:', socket.id);
+        });
+
+        socket.on('connect_error', (err) => {
+            console.error('Socket connection error:', err);
+        });
 
         socket.on('newRideRequest', (ride) => {
             console.log('Ride matching in progress...');
