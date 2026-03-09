@@ -40,7 +40,7 @@ function ChangeView({ bounds }: { bounds: any }) {
     return null;
 }
 
-export default function MapComponent({ riderPos, pickupPos, dropPos, center = [28.6139, 77.2090], zoom = 13 }: MapProps) {
+export default function MapComponent({ riderPos, pickupPos, dropPos, center = [24.1627, 83.8055], zoom = 14 }: MapProps) {
     const [route, setRoute] = useState<[number, number][]>([]);
 
     useEffect(() => {

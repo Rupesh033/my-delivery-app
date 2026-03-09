@@ -14,9 +14,9 @@ export default function CustomerPage() {
     const [rideData, setRideData] = useState<any>(null);
     const [riderCoords, setRiderCoords] = useState<[number, number] | undefined>(undefined);
 
-    // Mock coordinates for Patna (as per user context)
-    const [pickupCoords] = useState<[number, number]>([25.5941, 85.1376]);
-    const [dropCoords] = useState<[number, number]>([25.6126, 85.1581]);
+    // Mock coordinates for Garhwa, Jharkhand
+    const [pickupCoords] = useState<[number, number]>([24.1627, 83.8055]);
+    const [dropCoords] = useState<[number, number]>([24.1750, 83.8200]);
 
     useEffect(() => {
         socket.connect();

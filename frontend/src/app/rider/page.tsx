@@ -38,8 +38,8 @@ export default function RiderPage() {
         // Broadcast location every 5s if online
         const interval = setInterval(() => {
             if (online) {
-                const lat = 25.5941 + (Math.random() - 0.5) * 0.02;
-                const lng = 85.1376 + (Math.random() - 0.5) * 0.02;
+                const lat = 24.1627 + (Math.random() - 0.5) * 0.01;
+                const lng = 83.8055 + (Math.random() - 0.5) * 0.01;
                 socket.emit('updateLocation', {
                     riderId: 'R1',
                     lat,
@@ -135,14 +135,14 @@ export default function RiderPage() {
                             <button onClick={handleVerifyOtp} className="w-full btn-primary py-3">Start Ride</button>
 
                             <div className="h-48 mt-6 bg-[#222] rounded-xl overflow-hidden border border-gray-700">
-                                <MapComponent pickupPos={[25.5941, 85.1376]} />
+                                <MapComponent pickupPos={[24.1627, 83.8055]} />
                             </div>
                         </div>
                     ) : (
                         <div className="mt-4">
                             <p className="text-blue-400 font-bold mb-4 text-sm">Ride in Progress...</p>
                             <div className="h-48 mb-6 bg-[#222] rounded-xl overflow-hidden border border-gray-700">
-                                <MapComponent dropPos={[25.6126, 85.1581]} />
+                                <MapComponent dropPos={[24.1750, 83.8200]} />
                             </div>
                             <button onClick={() => { setActiveRide(null); setIsAccepted(false); setOnRide(false); }} className="w-full bg-gray-800 py-3 rounded-xl font-bold">Complete Ride</button>
                         </div>
