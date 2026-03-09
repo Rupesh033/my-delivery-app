@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   description: "Book fast, affordable, and safe bike rides instantly.",
 };
 
+import AuthProvider from "@/components/AuthProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,7 +30,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

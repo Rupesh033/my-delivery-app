@@ -6,7 +6,11 @@ import dynamic from 'next/dynamic';
 
 const MapComponent = dynamic(() => import('@/components/MapComponent'), { ssr: false });
 
+import { useSession, signOut } from "next-auth/react";
+import Link from 'next/link';
+
 export default function CustomerPage() {
+    const { data: session } = useSession();
     const [step, setStep] = useState('selection'); // selection, searching, booked
     const [pickup, setPickup] = useState('');
     const [drop, setDrop] = useState('');
@@ -46,7 +50,8 @@ export default function CustomerPage() {
     const handleBook = async () => {
         setStep('searching');
         // Register ride request with backend
-        fetch('http://localhost:5000/api/rides/book', {
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+        fetch(`${backendUrl}/api/rides/book`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: 'U1', pickup, drop, fare })
@@ -55,9 +60,19 @@ export default function CustomerPage() {
 
     return (
         <div className="min-h-screen p-6 max-w-md mx-auto">
-            <header className="mb-8">
-                <h1 className="text-3xl font-extrabold rapido-gradient text-black inline-block px-4 py-1 rounded">Rapido</h1>
-                <p className="text-gray-400 mt-2">Where are you going today?</p>
+            <header className="mb-8 flex justify-between items-start">
+                <div>
+                    <h1 className="text-3xl font-extrabold rapido-gradient text-black inline-block px-4 py-1 rounded">Rapido</h1>
+                    <p className="text-gray-400 mt-2 text-sm">Where are you going today?</p>
+                </div>
+                {session ? (
+                    <div className="flex flex-col items-end gap-2">
+                        <img src={session.user?.image || ''} className="w-10 h-10 rounded-full border-2 border-[var(--primary)]" alt="User" />
+                        <button onClick={() => signOut()} className="text-[10px] text-gray-500 uppercase font-bold hover:text-white transition-colors">Sign Out</button>
+                    </div>
+                ) : (
+                    <Link href="/login" className="btn-primary text-xs px-4 py-2">Sign In</Link>
+                )}
             </header>
 
             {step === 'selection' && (
