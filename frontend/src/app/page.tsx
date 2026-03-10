@@ -37,8 +37,8 @@ export default function LandingPage() {
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-[#F9C935]/20 to-transparent blur-3xl rounded-full opacity-30 transform -translate-y-12"></div>
               <img
-                src="file:///C:/Users/LAPPY%20PLUS/.gemini/antigravity/brain/7e3889a9-ee4f-4fa5-b8fa-48af8b3694ca/rapido_hero_bike_1773164790661.png"
-                alt="Rapido Hero"
+                src="/hero.png"
+                alt="Rapido Pro Hero"
                 className="w-full h-auto rounded-3xl shadow-2xl relative z-10 border border-white/5 grayscale-[0.2] hover:grayscale-0 transition-all duration-700"
               />
             </div>
@@ -74,7 +74,7 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
             <div className="order-2 md:order-1">
               <img
-                src="file:///C:/Users/LAPPY%20PLUS/.gemini/antigravity/brain/7e3889a9-ee4f-4fa5-b8fa-48af8b3694ca/rapido_captain_earn_1773164813053.png"
+                src="/captain.png"
                 alt="Become a Captain"
                 className="w-full h-auto rounded-3xl shadow-2xl border border-white/5"
               />
