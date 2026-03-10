@@ -18,7 +18,7 @@ export default function LandingPage() {
                 India's Largest Bike Taxi Service
               </span>
               <h1 className="text-5xl md:text-7xl font-black mb-8 leading-[1.1] tracking-tighter">
-                Easiest way to <span className="text-[#F9C935]">commute</span> in the city
+                Easiest way to <span className="text-[#F9C935]">commute</span> with Rapido Pro
               </h1>
               <p className="text-gray-400 text-lg mb-10 max-w-lg leading-relaxed">
                 Rapido is the fastest and most affordable way to travel within your city. Beat the traffic and reach your destination on time, every time.

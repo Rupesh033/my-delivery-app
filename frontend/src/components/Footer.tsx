@@ -5,7 +5,7 @@ export default function Footer() {
         <footer className="bg-black text-white pt-20 pb-10 px-6 border-t border-white/5">
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
                 <div className="md:col-span-1">
-                    <h2 className="text-2xl font-black italic tracking-tighter text-[#F9C935] mb-6">RAPIDO</h2>
+                    <h2 className="text-2xl font-black italic tracking-tighter text-[#F9C935] mb-6">RAPIDO PRO</h2>
                     <p className="text-gray-400 text-sm leading-relaxed">
                         India's leading bike taxi service. Making urban travel affordable, fast, and safe for everyone.
                     </p>
