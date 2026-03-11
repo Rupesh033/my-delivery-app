@@ -58,8 +58,16 @@ app.post('/api/riders/register', (req, res) => {
 
 app.post('/api/admin/riders/action', (req, res) => {
     const { riderId, action } = req.body;
-    if (action === 'approve') RideService.approveRider(riderId);
+    let rider = null;
+    if (action === 'approve') rider = RideService.approveRider(riderId);
     if (action === 'reject' || action === 'remove') RideService.rejectRider(riderId);
+
+    // Notify the specific rider if they are connected
+    if (action === 'approve') {
+        io.emit('riderStatusUpdate', { riderId, status: 'approved' });
+    } else if (action === 'remove' || action === 'reject') {
+        io.emit('riderStatusUpdate', { riderId, status: 'removed' });
+    }
 
     // Broadcast update to admins
     io.to('admins').emit('systemUpdate', mockDb);
@@ -78,12 +86,12 @@ app.post('/api/admin/settings', (req, res) => {
 // ─── Ride Booking REST Endpoint ───────────────────────────────────────────────
 app.post('/api/rides/book', (req, res) => {
     try {
-        const { userId, pickup, drop, fare } = req.body;
+        const { userId, pickup, drop, fare, pickupCoords, dropCoords } = req.body;
         if (!pickup || !drop) {
             return res.status(400).json({ error: 'pickup and drop are required' });
         }
 
-        const ride = RideService.createRide(userId || 'guest', pickup, drop, fare || 0);
+        const ride = RideService.createRide(userId || 'guest', pickup, drop, fare || 0, pickupCoords, dropCoords);
 
         // Broadcast to riders and admins
         io.emit('newRideRequest', ride);

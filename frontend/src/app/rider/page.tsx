@@ -53,6 +53,18 @@ export default function RiderPage() {
             alert(data.message);
             setOnline(false);
         };
+        const onStatusUpdate = (data: any) => {
+            if (data.riderId === 'R1' || data.riderId === socket.id) {
+                if (data.status === 'approved') {
+                    alert('Badhai ho! Aapka account approve ho gaya hai. Ab aap rides le sakte hain.');
+                    window.location.reload();
+                } else if (data.status === 'removed' || data.status === 'rejected') {
+                    alert('Aapka account remove kar diya gaya hai.');
+                    setOnline(false);
+                    window.location.href = '/';
+                }
+            }
+        };
 
         socket.on('connect', onConnect);
         socket.on('disconnect', onDisconnect);
@@ -61,6 +73,7 @@ export default function RiderPage() {
         socket.on('rideStarted', onRideStarted);
         socket.on('otpError', onOtpError);
         socket.on('error', onError);
+        socket.on('riderStatusUpdate', onStatusUpdate);
 
         return () => {
             socket.off('connect', onConnect);
@@ -70,6 +83,7 @@ export default function RiderPage() {
             socket.off('rideStarted', onRideStarted);
             socket.off('otpError', onOtpError);
             socket.off('error', onError);
+            socket.off('riderStatusUpdate', onStatusUpdate);
         };
     }, []); // Single mount — no deps
 

@@ -61,12 +61,14 @@ export default function AdminMap({ riders, rides }: AdminMapProps) {
             ))}
 
             {/* Active Rides Paths (Simple straight lines for God View) */}
-            {rides.filter(r => r.status === 'on_ride').map(ride => (
+            {rides.filter(r => (r.status === 'on_ride' || r.status === 'accepted') && r.pickupCoords && r.dropCoords).map(ride => (
                 <Polyline
                     key={ride.id}
-                    positions={[[ride.lat, ride.lng], [ride.destLat, ride.destLng]] as any}
+                    positions={[ride.pickupCoords, ride.dropCoords]}
                     color="#F9C935"
                     dashArray="5, 10"
+                    weight={2}
+                    opacity={0.6}
                 />
             ))}
         </MapContainer>

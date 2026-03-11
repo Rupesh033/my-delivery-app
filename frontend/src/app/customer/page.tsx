@@ -93,7 +93,9 @@ export default function CustomerPage() {
                     userId: session?.user?.email || 'guest',
                     pickup: pickup.trim(),
                     drop: drop.trim(),
-                    fare
+                    fare,
+                    pickupCoords,
+                    dropCoords
                 })
             });
 
