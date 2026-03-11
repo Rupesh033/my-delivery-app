@@ -56,6 +56,23 @@ app.post('/api/riders/register', (req, res) => {
     res.status(201).json({ success: true, riderId: newRider.id });
 });
 
+app.post('/api/riders/login', (req, res) => {
+    const { phone } = req.body;
+    if (!phone) return res.status(400).json({ error: 'Phone number is required' });
+
+    const rider = mockDb.riders.find(r => r.phone === phone);
+    if (!rider) {
+        return res.status(404).json({ error: 'Rider not found with this phone number.' });
+    }
+
+    res.json({ 
+        success: true, 
+        riderId: rider.id,
+        isApproved: rider.isApproved,
+        name: rider.name 
+    });
+});
+
 app.post('/api/admin/riders/action', (req, res) => {
     const { riderId, action } = req.body;
     let rider = null;

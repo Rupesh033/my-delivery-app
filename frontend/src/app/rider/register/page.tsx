@@ -106,6 +106,9 @@ export default function RiderRegisterPage() {
                                 {loading ? 'Processing...' : 'Submit Application'}
                             </button>
                         </form>
+                        <p className="mt-6 text-center text-gray-500 text-sm font-bold">
+                            Already a captain? <Link href="/rider/login" className="text-[#F9C935] hover:underline">Login here</Link>
+                        </p>
                     </div>
                 )}
 
