@@ -22,7 +22,57 @@ app.use(express.json());
 
 // ─── Health Check ────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
-    res.json({ status: 'ok', message: 'Rapido Backend is running', time: new Date() });
+    res.json({
+        status: 'ok',
+        message: 'Rapido Backend is running',
+        time: new Date(),
+        clients: io.engine.clientsCount
+    });
+});
+
+// ─── Admin Endpoints ──────────────────────────────────────────────────────────
+app.get('/api/admin/data', (req, res) => {
+    res.json(mockDb);
+});
+
+app.post('/api/riders/register', (req, res) => {
+    const { name, phone, vehicle } = req.body;
+    if (!name || !phone) return res.status(400).json({ error: 'Missing information' });
+
+    const newRider = {
+        id: 'R' + Date.now(),
+        name,
+        phone,
+        vehicle: vehicle || 'Bike',
+        isOnline: false,
+        isApproved: false,
+        lat: 24.1627,
+        lng: 83.8055,
+        role: 'rider'
+    };
+
+    mockDb.riders.push(newRider);
+    io.to('admins').emit('systemUpdate', mockDb); // Notify admins of new application
+    res.status(201).json({ success: true, riderId: newRider.id });
+});
+
+app.post('/api/admin/riders/action', (req, res) => {
+    const { riderId, action } = req.body;
+    if (action === 'approve') RideService.approveRider(riderId);
+    if (action === 'reject' || action === 'remove') RideService.rejectRider(riderId);
+
+    // Broadcast update to admins
+    io.to('admins').emit('systemUpdate', mockDb);
+    res.json({ success: true });
+});
+
+app.post('/api/admin/settings', (req, res) => {
+    const { perKm, baseFare } = req.body;
+    RideService.updatePricing(perKm, baseFare);
+
+    // Broadcast update to admins
+    io.to('admins').emit('systemUpdate', mockDb);
+    res.json({ success: true, settings: mockDb.settings });
 });
 
 // ─── Ride Booking REST Endpoint ───────────────────────────────────────────────
@@ -32,14 +82,12 @@ app.post('/api/rides/book', (req, res) => {
         if (!pickup || !drop) {
             return res.status(400).json({ error: 'pickup and drop are required' });
         }
-        console.log(`[BOOK] ${userId}: "${pickup}" → "${drop}" @ ₹${fare}`);
 
         const ride = RideService.createRide(userId || 'guest', pickup, drop, fare || 0);
-        console.log(`[BOOK] Ride created: ${ride.id} | OTP: ${ride.otp}`);
 
-        // Broadcast to every connected socket (riders will filter on their end)
+        // Broadcast to riders and admins
         io.emit('newRideRequest', ride);
-        console.log(`[BOOK] Broadcasted newRideRequest to ${io.engine.clientsCount} clients`);
+        io.to('admins').emit('systemUpdate', mockDb); // Notify admins of new ride
 
         res.status(201).json({ ride });
     } catch (err) {
@@ -52,20 +100,34 @@ app.post('/api/rides/book', (req, res) => {
 io.on('connection', (socket) => {
     console.log(`[SOCKET] Connected: ${socket.id} | Total: ${io.engine.clientsCount}`);
 
+    // ── Admin Registration ──
+    socket.on('registerAdmin', () => {
+        socket.join('admins');
+        console.log(`[ADMIN] Admin connected: ${socket.id}`);
+        socket.emit('systemUpdate', mockDb);
+    });
+
     // ── Rider goes online ──
     socket.on('goOnline', ({ riderId }) => {
         try {
             socket.data.riderId = riderId;
             socket.data.role = 'rider';
             socket.join('riders');
-            console.log(`[ONLINE] Rider ${riderId} is ONLINE (socket: ${socket.id})`);
+            console.log(`[ONLINE] Rider ${riderId} is ONLINE`);
+
+            // Check if rider is approved
+            const rider = mockDb.riders.find(r => r.id === riderId);
+            if (!rider || !rider.isApproved) {
+                return socket.emit('error', { message: 'Your account is pending admin approval.' });
+            }
 
             // Send any waiting (searching) rides to this newly-online rider
             const pending = mockDb.rides.filter(r => r.status === 'searching');
             if (pending.length > 0) {
-                console.log(`[ONLINE] Sending ${pending.length} pending ride(s) to ${riderId}`);
                 pending.forEach(ride => socket.emit('newRideRequest', ride));
             }
+
+            io.to('admins').emit('systemUpdate', mockDb); // Notify admins
         } catch (err) {
             console.error('[ONLINE] Error:', err);
         }
@@ -75,24 +137,29 @@ io.on('connection', (socket) => {
     socket.on('goOffline', ({ riderId }) => {
         socket.leave('riders');
         console.log(`[OFFLINE] Rider ${riderId} is OFFLINE`);
+        io.to('admins').emit('systemUpdate', mockDb);
     });
 
     // ── Rider updates location ──
     socket.on('updateLocation', ({ riderId, lat, lng }) => {
+        // Update mockDb for admin view
+        const rider = mockDb.riders.find(r => r.id === riderId);
+        if (rider) {
+            rider.lat = lat;
+            rider.lng = lng;
+        }
         socket.broadcast.emit('riderLocationUpdate', { riderId, lat, lng });
+        io.to('admins').emit('systemUpdate', mockDb); // Real-time map update for admin
     });
 
     // ── Rider accepts ride ──
     socket.on('acceptRide', ({ rideId, riderId }) => {
         try {
-            console.log(`[ACCEPT] Rider ${riderId} accepted ride ${rideId}`);
             const ride = RideService.updateRideStatus(rideId, 'accepted', riderId);
-            if (!ride) {
-                console.error(`[ACCEPT] Ride ${rideId} not found`);
-                return socket.emit('error', { message: 'Ride not found' });
-            }
-            console.log(`[ACCEPT] Broadcasting rideAccepted | OTP: ${ride.otp}`);
+            if (!ride) return socket.emit('error', { message: 'Ride not found' });
+
             io.emit('rideAccepted', { rideId, riderId, ride });
+            io.to('admins').emit('systemUpdate', mockDb);
         } catch (err) {
             console.error('[ACCEPT] Error:', err);
         }
@@ -103,10 +170,10 @@ io.on('connection', (socket) => {
         try {
             const result = RideService.verifyOTP(rideId, otp);
             if (result.success) {
-                console.log(`[OTP] Ride ${rideId} started`);
                 io.emit('rideStarted', { rideId, status: 'on_ride' });
+                io.to('admins').emit('systemUpdate', mockDb);
             } else {
-                socket.emit('otpError', { message: 'Invalid OTP. Please try again.' });
+                socket.emit('otpError', { message: 'Invalid OTP' });
             }
         } catch (err) {
             console.error('[OTP] Error:', err);

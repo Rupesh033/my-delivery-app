@@ -4,9 +4,13 @@
  */
 
 const mockDb = {
+    settings: {
+        perKm: 12,
+        baseFare: 30
+    },
     riders: [
-        { id: 'R1', name: 'Rupesh', role: 'rider', isOnline: true, lat: 24.1627, lng: 83.8055, vehicle: 'Bike' },
-        { id: 'R2', name: 'Amit', role: 'rider', isOnline: false, lat: 24.1750, lng: 83.8200, vehicle: 'Scooter' }
+        { id: 'R1', name: 'Rupesh', role: 'rider', isOnline: true, isApproved: true, lat: 24.1627, lng: 83.8055, vehicle: 'Bike' },
+        { id: 'R2', name: 'Amit', role: 'rider', isOnline: false, isApproved: false, lat: 24.1750, lng: 83.8200, vehicle: 'Scooter' }
     ],
     rides: [],
     users: [
@@ -16,8 +20,8 @@ const mockDb = {
 
 const RideService = {
     findNearestRider: (pickup) => {
-        // Simple distance check (mocked)
-        return mockDb.riders.find(r => r.isOnline);
+        // Only return approved and online riders
+        return mockDb.riders.find(r => r.isOnline && r.isApproved);
     },
 
     createRide: (customerId, pickup, drop, fare) => {
@@ -27,7 +31,7 @@ const RideService = {
             pickup,
             drop,
             fare,
-            otp: Math.floor(1000 + Math.random() * 9000).toString(), // Generate 4-digit OTP
+            otp: Math.floor(1000 + Math.random() * 9000).toString(),
             status: 'searching',
             timestamp: new Date()
         };
@@ -52,6 +56,25 @@ const RideService = {
             return ride;
         }
         return null;
+    },
+
+    // Admin Methods
+    approveRider: (riderId) => {
+        const rider = mockDb.riders.find(r => r.id === riderId);
+        if (rider) rider.isApproved = true;
+        return rider;
+    },
+
+    rejectRider: (riderId) => {
+        const riderIndex = mockDb.riders.findIndex(r => r.id === riderId);
+        if (riderIndex > -1) mockDb.riders.splice(riderIndex, 1);
+        return true;
+    },
+
+    updatePricing: (perKm, baseFare) => {
+        mockDb.settings.perKm = Number(perKm);
+        mockDb.settings.baseFare = Number(baseFare);
+        return mockDb.settings;
     }
 };
 

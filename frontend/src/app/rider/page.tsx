@@ -49,6 +49,10 @@ export default function RiderPage() {
         };
         const onRideStarted = () => setOnRide(true);
         const onOtpError = (data: any) => setOtpError(data?.message || 'Invalid OTP');
+        const onError = (data: any) => {
+            alert(data.message);
+            setOnline(false);
+        };
 
         socket.on('connect', onConnect);
         socket.on('disconnect', onDisconnect);
@@ -56,6 +60,7 @@ export default function RiderPage() {
         socket.on('newRideRequest', onNewRideRequest);
         socket.on('rideStarted', onRideStarted);
         socket.on('otpError', onOtpError);
+        socket.on('error', onError);
 
         return () => {
             socket.off('connect', onConnect);
@@ -64,6 +69,7 @@ export default function RiderPage() {
             socket.off('newRideRequest', onNewRideRequest);
             socket.off('rideStarted', onRideStarted);
             socket.off('otpError', onOtpError);
+            socket.off('error', onError);
         };
     }, []); // Single mount — no deps
 

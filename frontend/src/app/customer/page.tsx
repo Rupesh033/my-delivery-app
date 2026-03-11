@@ -24,6 +24,17 @@ export default function CustomerPage() {
     const pickupCoords: [number, number] = [24.1627, 83.8055];
     const dropCoords: [number, number] = [24.1750, 83.8200];
     const [riderCoords, setRiderCoords] = useState<[number, number] | undefined>(undefined);
+    const [pricing, setPricing] = useState({ baseFare: 30, perKm: 12 });
+
+    // Fetch pricing on mount
+    useEffect(() => {
+        fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/data`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.settings) setPricing(data.settings);
+            })
+            .catch(err => console.error('Pricing fetch failed:', err));
+    }, []);
 
     // ── Socket setup (runs once on mount) ──────────────────────────────────
     useEffect(() => {
@@ -99,11 +110,17 @@ export default function CustomerPage() {
     // ── Handle Drop input (also calculates fare) ────────────────────────────
     const handleDropChange = (val: string) => {
         setDrop(val);
-        if (val.trim()) {
-            setFare(Math.floor(Math.random() * 100) + 40);
-        } else {
-            setFare(0);
-        }
+        const handleDropChange = (val: string) => {
+            setDrop(val);
+            if (val.trim()) {
+                // Mock distance: 2-8 km
+                const distance = Math.floor(Math.random() * 6) + 2;
+                const calculatedFare = pricing.baseFare + (distance * pricing.perKm);
+                setFare(calculatedFare);
+            } else {
+                setFare(0);
+            }
+        };
     };
 
     return (

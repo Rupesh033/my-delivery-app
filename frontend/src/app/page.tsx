@@ -28,7 +28,7 @@ export default function LandingPage() {
                 <Link href="/customer" className="bg-[#F9C935] text-black px-10 py-5 rounded-2xl font-black text-lg hover:scale-105 transition-transform active:scale-95 text-center">
                   Book a Ride Now
                 </Link>
-                <Link href="/rider" className="bg-white/5 border border-white/10 text-white px-10 py-5 rounded-2xl font-bold text-lg hover:bg-white/10 transition-colors text-center">
+                <Link href="/rider/register" className="bg-white/5 border border-white/10 text-white px-10 py-5 rounded-2xl font-bold text-lg hover:bg-white/10 transition-colors text-center">
                   Become a Captain
                 </Link>
               </div>
@@ -97,7 +97,9 @@ export default function LandingPage() {
                 ))}
               </ul>
 
-              <Link href="/rider" className="inline-block bg-[#F9C935] text-black px-10 py-5 rounded-2xl font-black text-lg hover:scale-105 transition-transform active:scale-95">
+              <Link href="/rider/register" className="inline-block bg-[#F9C935] text-black px-10 py-5 rounded-2xl font-black text-lg hover:scale-105 transition-transform active:scale-95">
+                Apply to Ride
+              </Link>
                 Register as a Captain
               </Link>
             </div>
