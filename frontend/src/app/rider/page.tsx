@@ -14,6 +14,12 @@ export default function RiderPage() {
     const [otpInput, setOtpInput] = useState('');
     const [onRide, setOnRide] = useState(false);
     const [otpError, setOtpError] = useState('');
+    const [riderId, setRiderId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const id = localStorage.getItem('riderId') || 'R1';
+        setRiderId(id);
+    }, []);
 
     // Ref so socket listener always reads the latest `online` value
     const onlineRef = useRef(false);
@@ -54,7 +60,7 @@ export default function RiderPage() {
             setOnline(false);
         };
         const onStatusUpdate = (data: any) => {
-            if (data.riderId === 'R1' || data.riderId === socket.id) {
+            if (data.riderId === riderId || data.riderId === socket.id) {
                 if (data.status === 'approved') {
                     alert('Badhai ho! Aapka account approve ho gaya hai. Ab aap rides le sakte hain.');
                     window.location.reload();
@@ -93,7 +99,7 @@ export default function RiderPage() {
         const interval = setInterval(() => {
             const lat = 24.1627 + (Math.random() - 0.5) * 0.01;
             const lng = 83.8055 + (Math.random() - 0.5) * 0.01;
-            socket.emit('updateLocation', { riderId: 'R1', lat, lng });
+        socket.emit('updateLocation', { riderId, lat, lng });
         }, 5000);
         return () => clearInterval(interval);
     }, [online]); // Starts/stops cleanly with online status
@@ -103,10 +109,10 @@ export default function RiderPage() {
         const next = !online;
         setOnline(next);
         if (next) {
-            socket.emit('goOnline', { riderId: 'R1' });
+            socket.emit('goOnline', { riderId });
             console.log('[RIDER] Went ONLINE');
         } else {
-            socket.emit('goOffline', { riderId: 'R1' });
+            socket.emit('goOffline', { riderId });
             setActiveRide(null);
             console.log('[RIDER] Went OFFLINE');
         }
@@ -114,7 +120,7 @@ export default function RiderPage() {
 
     // ── Accept Ride ─────────────────────────────────────────────────────────
     const handleAccept = () => {
-        socket.emit('acceptRide', { rideId: activeRide.id, riderId: 'R1' });
+        socket.emit('acceptRide', { rideId: activeRide.id, riderId });
         setIsAccepted(true);
     };
 
