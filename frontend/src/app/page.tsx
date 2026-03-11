@@ -100,8 +100,6 @@ export default function LandingPage() {
               <Link href="/rider/register" className="inline-block bg-[#F9C935] text-black px-10 py-5 rounded-2xl font-black text-lg hover:scale-105 transition-transform active:scale-95">
                 Apply to Ride
               </Link>
-                Register as a Captain
-              </Link>
             </div>
           </div>
         </section>
