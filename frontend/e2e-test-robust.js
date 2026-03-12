@@ -8,31 +8,42 @@ const { chromium } = require('playwright');
         // 1. Setup Rider
         const riderContext = await browser.newContext();
         const riderPage = await riderContext.newPage();
+        riderPage.on('console', msg => console.log(`[RIDER-BROWSER] ${msg.text()}`));
         console.log('--- Rider: Navigating to Hub ---');
-        await riderPage.goto('https://frontend-taupe-eta-66.vercel.app/rider', { waitUntil: 'networkidle' });
+        await riderPage.goto('http://localhost:3000/rider', { waitUntil: 'networkidle' });
 
         console.log('--- Rider: Going ONLINE ---');
-        const goOnlineBtn = riderPage.locator('button:has-text("Go Online")').first();
+        const offlineBtn = riderPage.locator('button:has-text("OFFLINE")');
+        const goOnlineBtn = riderPage.locator('button:has-text("Go Online")');
+        
         if (await goOnlineBtn.isVisible()) {
             await goOnlineBtn.click();
-        } else {
-            await riderPage.click('button:has-text("OFFLINE")');
+        } else if (await offlineBtn.isVisible()) {
+            await offlineBtn.click();
         }
 
-        // Wait for the pulse/waiting state instead of button text
-        await riderPage.waitForSelector('text="Waiting for requests"', { timeout: 15000 });
-        console.log('✅ Rider is ONLINE and Waiting');
+        // Wait for either the waiting status OR the new request card
+        const waitingSelector = 'text="Waiting for requests..."';
+        const requestSelector = 'text=/New Request/i';
+        
+        const state = await Promise.race([
+            riderPage.waitForSelector(waitingSelector, { timeout: 15000 }).then(() => 'waiting'),
+            riderPage.waitForSelector(requestSelector, { timeout: 15000 }).then(() => 'request')
+        ]);
+
+        console.log(`✅ Rider is in state: ${state}`);
         await riderPage.screenshot({ path: 'test_rider_ready.png' });
 
         // 2. Setup Customer
         const customerContext = await browser.newContext();
         const customerPage = await customerContext.newPage();
+        customerPage.on('console', msg => console.log(`[CUSTOMER-BROWSER] ${msg.text()}`));
         console.log('--- Customer: Navigating to App ---');
-        await customerPage.goto('https://frontend-taupe-eta-66.vercel.app/customer', { waitUntil: 'networkidle' });
+        await customerPage.goto('http://localhost:3000/customer', { waitUntil: 'networkidle' });
 
         console.log('--- Customer: Booking Ride ---');
-        await customerPage.fill('input[placeholder*="pickup"]', 'Garhwa');
-        await customerPage.fill('input[placeholder*="destination"]', 'Rehla');
+        await customerPage.fill('input[placeholder*="Garhwa"]', 'Garhwa');
+        await customerPage.fill('input[placeholder*="Rehla"]', 'Rehla');
         await customerPage.waitForSelector('text="Estimated Fare"', { timeout: 10000 });
 
         await customerPage.click('button:has-text("Book Now")');
@@ -42,7 +53,7 @@ const { chromium } = require('playwright');
 
         // 3. Sync Check: Rider receives request
         console.log('--- Sync: Checking Rider for request ---');
-        await riderPage.waitForSelector('text="NEW REQUEST"', { timeout: 30000 });
+        await riderPage.waitForSelector('text=/New Request/i', { timeout: 30000 });
         console.log('✅ Rider received the request!');
         await riderPage.screenshot({ path: 'test_rider_received_final.png' });
 

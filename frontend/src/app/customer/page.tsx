@@ -112,17 +112,14 @@ export default function CustomerPage() {
     // ── Handle Drop input (also calculates fare) ────────────────────────────
     const handleDropChange = (val: string) => {
         setDrop(val);
-        const handleDropChange = (val: string) => {
-            setDrop(val);
-            if (val.trim()) {
-                // Mock distance: 2-8 km
-                const distance = Math.floor(Math.random() * 6) + 2;
-                const calculatedFare = pricing.baseFare + (distance * pricing.perKm);
-                setFare(calculatedFare);
-            } else {
-                setFare(0);
-            }
-        };
+        if (val.trim()) {
+            // Mock distance: 2-8 km
+            const distance = Math.floor(Math.random() * 6) + 2;
+            const calculatedFare = pricing.baseFare + (distance * pricing.perKm);
+            setFare(calculatedFare);
+        } else {
+            setFare(0);
+        }
     };
 
     return (
