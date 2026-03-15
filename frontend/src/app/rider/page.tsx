@@ -31,6 +31,9 @@ export default function RiderPage() {
 
     // ── Socket setup – runs once on mount ──────────────────────────────────
     useEffect(() => {
+        const id = localStorage.getItem('riderId') || 'R1';
+        // @ts-ignore
+        socket.io.opts.query = { role: 'rider', userId: id };
         socket.connect();
 
         const onConnect = () => {

@@ -27,6 +27,9 @@ export default function AdminPage() {
     useEffect(() => {
         fetchAdminData();
 
+        // @ts-ignore
+        socket.io.opts.query = { role: 'admin' };
+        socket.connect();
         socket.emit('registerAdmin');
 
         socket.on('systemUpdate', (updatedData) => {

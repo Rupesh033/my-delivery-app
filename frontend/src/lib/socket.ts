@@ -4,5 +4,10 @@ const SOCKET_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000
 
 export const socket = io(SOCKET_URL, {
   autoConnect: false,
-  transports: ['websocket', 'polling'],
+  transports: ['websocket'],
+  reconnection: true,
+  reconnectionAttempts: Infinity,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000,
+  timeout: 20000,
 });

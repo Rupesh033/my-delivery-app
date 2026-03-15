@@ -14,7 +14,9 @@ const io = new Server(server, {
         methods: ['GET', 'POST']
     },
     pingTimeout: 60000,
-    pingInterval: 25000
+    pingInterval: 25000,
+    connectTimeout: 45000,
+    allowEIO3: true
 });
 
 app.use(cors());
@@ -52,6 +54,8 @@ app.post('/api/riders/register', (req, res) => {
     };
 
     mockDb.riders.push(newRider);
+    const { saveDb } = require('./services/rideService'); // Import here for side effect
+    saveDb(mockDb);
     io.to('admins').emit('systemUpdate', mockDb); // Notify admins of new application
     res.status(201).json({ success: true, riderId: newRider.id });
 });
@@ -110,8 +114,8 @@ app.post('/api/rides/book', (req, res) => {
 
         const ride = RideService.createRide(userId || 'guest', pickup, drop, fare || 0, pickupCoords, dropCoords);
 
-        // Broadcast to riders and admins
-        io.emit('newRideRequest', ride);
+        // Broadcast to riders and admins (Optimized)
+        io.to('riders').emit('newRideRequest', ride);
         io.to('admins').emit('systemUpdate', mockDb); // Notify admins of new ride
 
         res.status(201).json({ ride });
@@ -122,22 +126,35 @@ app.post('/api/rides/book', (req, res) => {
 });
 
 // ─── Socket.io ────────────────────────────────────────────────────────────────
+// ─── Socket.io ────────────────────────────────────────────────────────────────
 io.on('connection', (socket) => {
     console.log(`[SOCKET] Connected: ${socket.id} | Total: ${io.engine.clientsCount}`);
 
+    // Join room based on role if provided in handshake
+    const { role, userId } = socket.handshake.query;
+    if (role === 'admin') socket.join('admins');
+    if (role === 'rider') socket.join('riders');
+    if (userId) socket.join(`user_${userId}`);
+
     // ── Admin Registration ──
     socket.on('registerAdmin', () => {
-        socket.join('admins');
-        console.log(`[ADMIN] Admin connected: ${socket.id}`);
-        socket.emit('systemUpdate', mockDb);
+        try {
+            socket.join('admins');
+            console.log(`[ADMIN] Admin connected: ${socket.id}`);
+            socket.emit('systemUpdate', mockDb);
+        } catch (err) {
+            console.error('[ADMIN_REG] Error:', err);
+        }
     });
 
     // ── Rider goes online ──
     socket.on('goOnline', ({ riderId }) => {
         try {
+            if (!riderId) return;
             socket.data.riderId = riderId;
             socket.data.role = 'rider';
             socket.join('riders');
+            socket.join(`rider_${riderId}`);
             console.log(`[ONLINE] Rider ${riderId} is ONLINE`);
 
             // Check if rider is approved
@@ -152,7 +169,7 @@ io.on('connection', (socket) => {
                 pending.forEach(ride => socket.emit('newRideRequest', ride));
             }
 
-            io.to('admins').emit('systemUpdate', mockDb); // Notify admins
+            io.to('admins').emit('systemUpdate', mockDb); 
         } catch (err) {
             console.error('[ONLINE] Error:', err);
         }
@@ -160,31 +177,47 @@ io.on('connection', (socket) => {
 
     // ── Rider goes offline ──
     socket.on('goOffline', ({ riderId }) => {
-        socket.leave('riders');
-        console.log(`[OFFLINE] Rider ${riderId} is OFFLINE`);
-        io.to('admins').emit('systemUpdate', mockDb);
+        try {
+            socket.leave('riders');
+            socket.leave(`rider_${riderId}`);
+            console.log(`[OFFLINE] Rider ${riderId} is OFFLINE`);
+            io.to('admins').emit('systemUpdate', mockDb);
+        } catch (err) {
+            console.error('[OFFLINE] Error:', err);
+        }
     });
 
     // ── Rider updates location ──
     socket.on('updateLocation', ({ riderId, lat, lng }) => {
-        // Update mockDb for admin view
-        const rider = mockDb.riders.find(r => r.id === riderId);
-        if (rider) {
-            rider.lat = lat;
-            rider.lng = lng;
+        try {
+            if (!riderId) return;
+            // Update mockDb for admin view
+            const rider = mockDb.riders.find(r => r.id === riderId);
+            if (rider) {
+                rider.lat = lat;
+                rider.lng = lng;
+            }
+            // Broadcast only to admins and relevant customers (optimized)
+            io.to('admins').emit('riderLocationUpdate', { riderId, lat, lng });
+        } catch (err) {
+            console.error('[LOCATION] Error:', err);
         }
-        socket.broadcast.emit('riderLocationUpdate', { riderId, lat, lng });
-        io.to('admins').emit('systemUpdate', mockDb); // Real-time map update for admin
     });
 
     // ── Rider accepts ride ──
     socket.on('acceptRide', ({ rideId, riderId }) => {
         try {
+            if (!rideId || !riderId) return;
             const ride = RideService.updateRideStatus(rideId, 'accepted', riderId);
             if (!ride) return socket.emit('error', { message: 'Ride not found' });
 
-            io.emit('rideAccepted', { rideId, riderId, ride });
+            // Notify specific customer, the rider, and admins
+            io.to(`user_${ride.customerId}`).emit('rideAccepted', { rideId, riderId, ride });
+            io.to(`rider_${riderId}`).emit('rideAccepted', { rideId, riderId, ride });
             io.to('admins').emit('systemUpdate', mockDb);
+            
+            // Remove from other riders' searching list
+            socket.broadcast.to('riders').emit('rideRemoved', { rideId });
         } catch (err) {
             console.error('[ACCEPT] Error:', err);
         }
@@ -195,7 +228,9 @@ io.on('connection', (socket) => {
         try {
             const result = RideService.verifyOTP(rideId, otp);
             if (result.success) {
-                io.emit('rideStarted', { rideId, status: 'on_ride' });
+                const ride = result.ride;
+                io.to(`user_${ride.customerId}`).emit('rideStarted', { rideId, status: 'on_ride' });
+                io.to(`rider_${ride.riderId}`).emit('rideStarted', { rideId, status: 'on_ride' });
                 io.to('admins').emit('systemUpdate', mockDb);
             } else {
                 socket.emit('otpError', { message: 'Invalid OTP' });
@@ -208,6 +243,15 @@ io.on('connection', (socket) => {
     socket.on('disconnect', (reason) => {
         console.log(`[SOCKET] Disconnected: ${socket.id} | Reason: ${reason}`);
     });
+});
+
+// ─── Global Error Handlers ────────────────────────────────────────────────────
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception thrown:', err);
 });
 
 // ─── Start Server ─────────────────────────────────────────────────────────────

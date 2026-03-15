@@ -38,6 +38,9 @@ export default function CustomerPage() {
 
     // ── Socket setup (runs once on mount) ──────────────────────────────────
     useEffect(() => {
+        const userId = session?.user?.email || 'guest';
+        // @ts-ignore
+        socket.io.opts.query = { role: 'customer', userId };
         socket.connect();
 
         const onConnect = () => setSocketConnected(true);
