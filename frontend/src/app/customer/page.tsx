@@ -19,6 +19,14 @@ export default function CustomerPage() {
     const [rideData, setRideData] = useState<any>(null);
     const [socketConnected, setSocketConnected] = useState(false);
     const [bookingError, setBookingError] = useState('');
+    const [selectedVehicle, setSelectedVehicle] = useState('bike');
+    const [quotes, setQuotes] = useState<any[]>([]);
+
+    const VEHICLE_OPTIONS = [
+        { id: 'bike', name: 'Bike', icon: '🏍️', multiplier: 1, description: 'Fast & Affordable' },
+        { id: 'auto', name: 'Auto', icon: '🛺', multiplier: 1.5, description: 'Comfortable & Safe' },
+        { id: 'cab', name: 'Cab', icon: '🚗', multiplier: 2.5, description: 'Premium & Private' },
+    ];
 
     // Map positions (Garhwa, Jharkhand defaults)
     const pickupCoords: [number, number] = [24.1627, 83.8055];
@@ -96,7 +104,8 @@ export default function CustomerPage() {
                     userId: session?.user?.email || 'guest',
                     pickup: pickup.trim(),
                     drop: drop.trim(),
-                    fare,
+                    fare: quotes.find(q => q.id === selectedVehicle)?.price || fare,
+                    vehicleType: VEHICLE_OPTIONS.find(v => v.id === selectedVehicle)?.name || 'Bike',
                     pickupCoords,
                     dropCoords
                 })
@@ -118,9 +127,17 @@ export default function CustomerPage() {
         if (val.trim()) {
             // Mock distance: 2-8 km
             const distance = Math.floor(Math.random() * 6) + 2;
-            const calculatedFare = pricing.baseFare + (distance * pricing.perKm);
-            setFare(calculatedFare);
+            const bikeFare = pricing.baseFare + (distance * pricing.perKm);
+            
+            const calculatedQuotes = VEHICLE_OPTIONS.map(v => ({
+                ...v,
+                price: Math.round(bikeFare * v.multiplier)
+            }));
+            
+            setQuotes(calculatedQuotes);
+            setFare(bikeFare); // Default/Old ref
         } else {
+            setQuotes([]);
             setFare(0);
         }
     };
@@ -173,14 +190,37 @@ export default function CustomerPage() {
                         />
                     </div>
 
-                    {fare > 0 && (
-                        <div className="mt-2 p-4 bg-[var(--secondary)] rounded-xl flex justify-between items-center border border-[var(--border)]">
-                            <div>
-                                <p className="text-sm text-gray-400">Estimated Fare</p>
-                                <p className="text-2xl font-bold text-[var(--primary)]">₹{fare}</p>
-                            </div>
-                            <button onClick={handleBook} className="btn-primary text-sm h-fit px-6 py-3">
-                                Book Now
+                    {quotes.length > 0 && (
+                        <div className="flex flex-col gap-3 mt-2">
+                            <label className="text-xs text-gray-500 uppercase font-bold tracking-widest">Compare & Choose</label>
+                            {quotes.map((quote) => (
+                                <button
+                                    key={quote.id}
+                                    onClick={() => setSelectedVehicle(quote.id)}
+                                    className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${selectedVehicle === quote.id
+                                            ? 'border-[var(--primary)] bg-[var(--primary)]/10'
+                                            : 'border-white/5 bg-[#111] opacity-70 hover:opacity-100 hover:border-white/20'
+                                        }`}
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="text-3xl">{quote.icon}</div>
+                                        <div className="text-left">
+                                            <p className="font-bold text-white">{quote.name}</p>
+                                            <p className="text-[10px] text-gray-500">{quote.description}</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xl font-black text-white">₹{quote.price}</p>
+                                        {quote.multiplier > 1 && <p className="text-[8px] text-[var(--primary)] font-bold uppercase">Popular</p>}
+                                    </div>
+                                </button>
+                            ))}
+
+                            <button
+                                onClick={handleBook}
+                                className="mt-4 btn-primary w-full py-4 text-lg shadow-xl shadow-[var(--primary)]/20 active:scale-95 transition-transform"
+                            >
+                                Book Selected {VEHICLE_OPTIONS.find(v => v.id === selectedVehicle)?.name}
                             </button>
                         </div>
                     )}

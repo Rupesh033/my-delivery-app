@@ -52,13 +52,14 @@ const RideService = {
         return mockDb.riders.find(r => r.isOnline && r.isApproved);
     },
 
-    createRide: (customerId, pickup, drop, fare, pickupCoords = [24.1627, 83.8055], dropCoords = [24.1750, 83.8200]) => {
+    createRide: (customerId, pickup, drop, fare, vehicleType = 'Bike', pickupCoords = [24.1627, 83.8055], dropCoords = [24.1750, 83.8200]) => {
         const ride = {
             id: 'RIDE_' + Date.now(),
             customerId,
             pickup,
             drop,
             fare,
+            vehicleType,
             pickupCoords,
             dropCoords,
             otp: Math.floor(1000 + Math.random() * 9000).toString(),

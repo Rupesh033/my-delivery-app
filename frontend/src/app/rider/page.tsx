@@ -212,15 +212,23 @@ export default function RiderPage() {
                             <div className="w-3 h-3 bg-green-500 rounded-full mt-1 flex-shrink-0" />
                             <div>
                                 <p className="text-[10px] text-gray-500 uppercase font-bold">Pickup</p>
-                                <p className="font-bold">{activeRide.pickup}</p>
+                                <p className="font-bold truncate w-40">{activeRide.pickup}</p>
                             </div>
                         </div>
                         <div className="flex gap-3 items-start">
                             <div className="w-3 h-3 bg-red-500 rounded-full mt-1 flex-shrink-0" />
                             <div>
                                 <p className="text-[10px] text-gray-500 uppercase font-bold">Drop</p>
-                                <p className="font-bold">{activeRide.drop}</p>
+                                <p className="font-bold truncate w-40">{activeRide.drop}</p>
                             </div>
+                        </div>
+                        <div className="flex gap-3 items-center border-t border-white/5 pt-3 mt-3">
+                            <span className="text-xl">
+                                {activeRide.vehicleType === 'Auto' ? '🛺' : activeRide.vehicleType === 'Cab' ? '🚗' : '🏍️'}
+                            </span>
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                                Requested: {activeRide.vehicleType || 'Bike'}
+                            </p>
                         </div>
                     </div>
                     <div className="flex gap-3">
