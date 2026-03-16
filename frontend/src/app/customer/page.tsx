@@ -27,6 +27,7 @@ export default function CustomerPage() {
         { id: 'bike', name: 'Bike', icon: '🏍️', multiplier: 1, description: 'Fast & Affordable' },
         { id: 'auto', name: 'Auto', icon: '🛺', multiplier: 1.5, description: 'Comfortable & Safe' },
         { id: 'cab', name: 'Cab', icon: '🚗', multiplier: 2.5, description: 'Premium & Private' },
+        { id: 'parcel', name: 'Parcel', icon: '📦', multiplier: 0.8, description: 'Send Items Quickly' },
     ];
 
     // Map positions
@@ -107,6 +108,7 @@ export default function CustomerPage() {
                     drop: drop.trim(),
                     fare: quotes.find(q => q.id === selectedVehicle)?.price || fare,
                     vehicleType: VEHICLE_OPTIONS.find(v => v.id === selectedVehicle)?.name || 'Bike',
+                    serviceType: selectedVehicle === 'parcel' ? 'parcel' : 'ride',
                     pickupCoords,
                     dropCoords
                 })
@@ -150,6 +152,36 @@ export default function CustomerPage() {
             Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
+    };
+
+    // ── Voice Booking Logic ───────────────────────────────────────────────
+    const [isListening, setIsListening] = useState(false);
+    const handleVoiceBooking = () => {
+        // @ts-ignore
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            return alert("Voice booking is not supported in this browser. Please use Chrome.");
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-IN'; // Supports Indian accents
+        recognition.onstart = () => setIsListening(true);
+        recognition.onend = () => setIsListening(false);
+        recognition.onresult = (event: any) => {
+            const transcript = event.results[0][0].transcript;
+            console.log('[VOICE] Result:', transcript);
+            
+            // Logic to parse "from [Pickup] to [Drop]"
+            const lower = transcript.toLowerCase();
+            if (lower.includes('from') && lower.includes('to')) {
+                const parts = lower.split('from')[1].split('to');
+                setPickup(parts[0].trim());
+                setDrop(parts[1].trim());
+            } else {
+                alert(`I heard: "${transcript}". Please say: "From Ranchi to Delhi"`);
+            }
+        };
+        recognition.start();
     };
 
     const geocode = async (query: string) => {
@@ -206,11 +238,19 @@ export default function CustomerPage() {
             <header className="mb-8 flex justify-between items-start">
                 <div>
                     <h1 className="text-3xl font-extrabold rapido-gradient text-black inline-block px-4 py-1 rounded">Rapido</h1>
-                    <div className="flex items-center gap-2 mt-2">
-                        <div className={`w-2 h-2 rounded-full transition-colors ${socketConnected ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
-                        <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wide">
-                            {socketConnected ? 'Live — Connected' : 'Connecting to server...'}
-                        </p>
+                    <div className="flex items-center gap-3 mt-2">
+                        <button 
+                            onClick={handleVoiceBooking}
+                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase transition-all ${isListening ? 'bg-red-500 animate-pulse text-white' : 'bg-white/10 text-[var(--primary)] border border-[var(--primary)]/20'}`}
+                        >
+                            {isListening ? '🎤 Listening...' : '🎤 Speak to Book'}
+                        </button>
+                        <div className="flex items-center gap-1">
+                            <div className={`w-2 h-2 rounded-full transition-colors ${socketConnected ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
+                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wide">
+                                {socketConnected ? 'Live' : 'Offline'}
+                            </p>
+                        </div>
                     </div>
                 </div>
                 {session ? (

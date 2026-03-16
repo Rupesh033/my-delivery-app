@@ -107,12 +107,12 @@ app.post('/api/admin/settings', (req, res) => {
 // ─── Ride Booking REST Endpoint ───────────────────────────────────────────────
 app.post('/api/rides/book', (req, res) => {
     try {
-        const { userId, pickup, drop, fare, vehicleType, pickupCoords, dropCoords } = req.body;
+        const { userId, pickup, drop, fare, vehicleType, serviceType, pickupCoords, dropCoords } = req.body;
         if (!pickup || !drop) {
             return res.status(400).json({ error: 'pickup and drop are required' });
         }
 
-        const ride = RideService.createRide(userId || 'guest', pickup, drop, fare || 0, vehicleType || 'Bike', pickupCoords, dropCoords);
+        const ride = RideService.createRide(userId || 'guest', pickup, drop, fare || 0, vehicleType || 'Bike', pickupCoords, dropCoords, serviceType || 'ride');
 
         // Broadcast to riders and admins (Optimized)
         io.to('riders').emit('newRideRequest', ride);
