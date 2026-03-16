@@ -293,6 +293,10 @@ export default function CustomerPage() {
                                 {socketConnected ? 'Live' : 'Offline'}
                             </p>
                         </div>
+                        <button 
+                            className="bg-[#F9C935] text-black px-3 py-1 rounded-lg text-[10px] font-black uppercase italic shadow-lg shadow-[#F9C935]/10 hover:scale-105 active:scale-95 transition-all"
+                            onClick={() => alert("Simulating Call: Dialing +91 99999 88888 for Offline Booking...")}
+                        >📞 Call Book</button>
                     </div>
                 </div>
                 {session ? (
@@ -302,10 +306,6 @@ export default function CustomerPage() {
                     </div>
                 ) : (
                     <div className="flex items-center gap-3">
-                         <button 
-                            className="bg-[#F9C935] text-black px-4 py-2 rounded-xl text-xs font-black uppercase italic shadow-lg shadow-[#F9C935]/10 hover:scale-105 active:scale-95 transition-all"
-                            onClick={() => alert("Simulating Call: Dialing +91 99999 88888 for Offline Booking...")}
-                        >📞 Call Book</button>
                         <Link href="/login" className="btn-primary text-xs px-4 py-2">Sign In</Link>
                     </div>
                 )}
@@ -340,15 +340,17 @@ export default function CustomerPage() {
                     <div className="grid grid-cols-2 gap-3">
                         <button
                             onClick={() => setIsPinkMode(!isPinkMode)}
-                            className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 ${isPinkMode ? 'border-pink-500 bg-pink-500/10 text-pink-500' : 'border-white/5 bg-[#111] text-gray-500'}`}
+                            className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 relative overflow-hidden ${isPinkMode ? 'border-pink-500 bg-pink-500/10 text-pink-500' : 'border-white/5 bg-[#111] text-gray-500'}`}
                         >
+                            <span className="absolute top-0 right-0 bg-pink-500 text-white text-[8px] font-black px-2 py-0.5 rounded-bl-lg">NEW</span>
                             <span className="text-xl">🌸</span>
                             <span className="text-[10px] font-black uppercase italic">Pink Mode</span>
                         </button>
                         <button
                             onClick={() => setShowPassStore(true)}
-                            className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 ${isCommuterPass ? 'border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]' : 'border-white/5 bg-[#111] text-gray-500'}`}
+                            className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 relative overflow-hidden ${isCommuterPass ? 'border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]' : 'border-white/5 bg-[#111] text-gray-500'}`}
                         >
+                            <span className="absolute top-0 right-0 bg-[var(--primary)] text-black text-[8px] font-black px-2 py-0.5 rounded-bl-lg">PRO</span>
                             <span className="text-xl">💎</span>
                             <span className="text-[10px] font-black uppercase italic">{isCommuterPass ? 'Pass Active' : 'Get Pass'}</span>
                         </button>
