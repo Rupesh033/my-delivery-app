@@ -22,9 +22,10 @@ export default function CustomerPage() {
     const [selectedVehicle, setSelectedVehicle] = useState('bike');
     const [quotes, setQuotes] = useState<any[]>([]);
     const [isGeocoding, setIsGeocoding] = useState(false);
+    const [isCommuterPass, setIsCommuterPass] = useState(false);
 
     const VEHICLE_OPTIONS = [
-        { id: 'bike', name: 'Bike', icon: '🏍️', multiplier: 1, description: 'Fast & Affordable' },
+        { id: 'bike', name: 'Bike', icon: '🏍️', multiplier: 1, description: 'EV Support Available', isEV: true },
         { id: 'auto', name: 'Auto', icon: '🛺', multiplier: 1.5, description: 'Comfortable & Safe' },
         { id: 'cab', name: 'Cab', icon: '🚗', multiplier: 2.5, description: 'Premium & Private' },
         { id: 'parcel', name: 'Parcel', icon: '📦', multiplier: 0.8, description: 'Send Items Quickly' },
@@ -136,12 +137,22 @@ export default function CustomerPage() {
     // ── Geocoding & Distance Logic ──────────────────────────────────────────
     const calculateQuotes = useCallback((distanceInKm: number) => {
         const bikeFare = pricing.baseFare + (distanceInKm * pricing.perKm);
-        const calculatedQuotes = VEHICLE_OPTIONS.map(v => ({
-            ...v,
-            price: Math.max(v.multiplier * bikeFare, 20).toFixed(0) // Min fare 20
-        }));
+        const calculatedQuotes = VEHICLE_OPTIONS.map(v => {
+            let finalPrice = v.multiplier * bikeFare;
+            
+            // Apply EV Discount (10% off)
+            if (v.isEV) finalPrice *= 0.9;
+            
+            // Apply Commuter Pass Discount (20% off)
+            if (isCommuterPass) finalPrice *= 0.8;
+
+            return {
+                ...v,
+                price: Math.max(finalPrice, 20).toFixed(0)
+            };
+        });
         setQuotes(calculatedQuotes);
-    }, [pricing, VEHICLE_OPTIONS]);
+    }, [pricing, VEHICLE_OPTIONS, isCommuterPass]);
 
     const getDistance = (c1: [number, number], c2: [number, number]) => {
         const R = 6371; // km
@@ -288,6 +299,23 @@ export default function CustomerPage() {
                         />
                     </div>
 
+                    {/* Commuter Pass Toggle */}
+                    <div className="bg-[#111] p-4 rounded-2xl border border-white/5 flex justify-between items-center group hover:border-[var(--primary)]/30 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-[var(--primary)]/10 rounded-xl flex items-center justify-center text-xl">💎</div>
+                            <div>
+                                <p className="text-xs font-black uppercase text-white tracking-tighter italic">Commuter Pass</p>
+                                <p className="text-[10px] text-gray-500 font-bold uppercase">20% Discount Applied</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setIsCommuterPass(!isCommuterPass)}
+                            className={`w-12 h-6 rounded-full p-1 transition-colors ${isCommuterPass ? 'bg-[var(--primary)]' : 'bg-gray-800'}`}
+                        >
+                            <div className={`w-4 h-4 bg-white rounded-full transition-transform ${isCommuterPass ? 'translate-x-6' : 'translate-x-0'}`} />
+                        </button>
+                    </div>
+
                     <div className="h-48 bg-[#111] rounded-xl overflow-hidden border border-white/5 relative">
                         {isGeocoding && (
                             <div className="absolute inset-0 z-10 bg-black/40 backdrop-blur-[2px] flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-[#ffff00]">
@@ -391,9 +419,27 @@ export default function CustomerPage() {
                     <div className="w-12 h-12 bg-[var(--primary)] rounded-full flex items-center justify-center text-xl mx-auto mb-4">📍</div>
                     <h2 className="text-xl font-bold">Ride in Progress!</h2>
                     <p className="text-gray-400 mt-1 mb-6 text-sm">On the way to {drop}</p>
-                    <div className="h-80 bg-[#222] rounded-xl overflow-hidden mb-4">
+                    <div className="h-80 bg-[#222] rounded-xl overflow-hidden mb-6">
                         <MapComponent pickupPos={pickupCoords} dropPos={dropCoords} riderPos={riderCoords} />
                     </div>
+
+                    {/* SOS Button */}
+                    <button 
+                        onClick={() => {
+                            if (confirm('Are you in danger? This will alert admins and share your location.')) {
+                                socket.emit('emergencySOS', { 
+                                    rideId: (rideData as any).id, 
+                                    userId: session?.user?.name || 'Guest',
+                                    coords: pickupCoords
+                                });
+                                alert('SOS Alert Sent! Help is on the way.');
+                            }
+                        }}
+                        className="px-10 py-4 bg-red-600 hover:bg-red-700 text-white font-black rounded-full shadow-2xl shadow-red-600/50 flex items-center gap-2 uppercase italic tracking-tighter active:scale-95 transition-all w-full justify-center"
+                    >
+                        <span className="w-3 h-3 bg-white rounded-full animate-ping"></span>
+                        🔴 EMERGENCY SOS
+                    </button>
                 </div>
             )}
         </div>

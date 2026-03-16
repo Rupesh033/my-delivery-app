@@ -240,6 +240,11 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('emergencySOS', (data) => {
+        console.warn(`[EMERGENCY] SOS received from Ride ${data.rideId} | User: ${data.userId}`);
+        io.to('admins').emit('adminSOSAlert', data);
+    });
+
     socket.on('disconnect', (reason) => {
         console.log(`[SOCKET] Disconnected: ${socket.id} | Reason: ${reason}`);
     });

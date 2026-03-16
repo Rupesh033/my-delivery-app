@@ -11,6 +11,7 @@ export default function AdminPage() {
     const [activeTab, setActiveTab] = useState('monitoring');
     const [loading, setLoading] = useState(true);
     const [rates, setRates] = useState({ perKm: 12, baseFare: 30 });
+    const [sosAlert, setSosAlert] = useState<any>(null);
 
     const fetchAdminData = useCallback(async () => {
         try {
@@ -38,8 +39,16 @@ export default function AdminPage() {
             if (updatedData.settings) setRates(updatedData.settings);
         });
 
+        socket.on('adminSOSAlert', (data) => {
+            console.error('[GOD VIEW] EMERGENCY SOS RECEIVED!!', data);
+            setSosAlert(data);
+            // Play sound would go here
+            if ("vibrate" in navigator) navigator.vibrate([500, 200, 500]);
+        });
+
         return () => {
             socket.off('systemUpdate');
+            socket.off('adminSOSAlert');
         };
     }, [fetchAdminData]);
 
@@ -101,6 +110,22 @@ export default function AdminPage() {
                     ))}
                 </div>
             </header>
+
+            {sosAlert && (
+                <div className="mb-8 p-6 bg-red-600 rounded-3xl border-4 border-white animate-pulse flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="text-5xl">🚨</div>
+                        <div>
+                            <h2 className="text-2xl font-black italic leading-none">EMERGENCY SOS ALERT!</h2>
+                            <p className="text-black font-bold uppercase text-xs mt-1">Ride ID: {sosAlert.rideId} • Customer: {sosAlert.userId}</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-4">
+                        <button onClick={() => setSosAlert(null)} className="px-6 py-2 bg-black text-white rounded-xl font-bold uppercase text-xs tracking-widest">Dismiss</button>
+                        <button className="px-8 py-3 bg-white text-red-600 rounded-xl font-black uppercase text-sm shadow-xl">Contact Authorities</button>
+                    </div>
+                </div>
+            )}
 
             {activeTab === 'monitoring' && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
