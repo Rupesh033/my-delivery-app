@@ -494,6 +494,43 @@ export default function CustomerPage() {
                     </div>
                 </div>
             )}
+            {/* Commuter Pass Store Modal */}
+            {showPassStore && (
+                <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6">
+                    <div className="bg-[#111] border border-white/10 p-8 rounded-[2rem] w-full max-w-sm relative overflow-hidden">
+                        <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-[var(--primary)] opacity-10 rounded-full blur-3xl"></div>
+                        <button onClick={() => setShowPassStore(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white text-xl">✕</button>
+                        <div className="text-center">
+                            <div className="w-20 h-20 bg-[var(--primary)]/10 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-6 shadow-2xl shadow-[var(--primary)]/5">💎</div>
+                            <h2 className="text-3xl font-black italic tracking-tighter text-white uppercase">Commuter Pass</h2>
+                            <p className="text-gray-500 text-sm mt-2 font-bold uppercase tracking-widest">Travel Like a Pro</p>
+                        </div>
+                        <div className="mt-10 space-y-4">
+                            <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl">
+                                <span className="text-2xl">📉</span>
+                                <p className="text-xs font-bold text-gray-300">Flat 20% DISCOUNT on every ride</p>
+                            </div>
+                            <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl">
+                                <span className="text-2xl">🛡️</span>
+                                <p className="text-xs font-bold text-gray-300">Priority matching for all requests</p>
+                            </div>
+                        </div>
+                        <div className="mt-10">
+                            <p className="text-center text-[10px] text-gray-600 font-bold uppercase mb-4 tracking-[0.2em]">Unlimited usage for 30 days</p>
+                            <button 
+                                onClick={() => {
+                                    alert("Bhai, Pass Unlock ho gaya! Ab maze kijiye.");
+                                    setIsCommuterPass(true);
+                                    setShowPassStore(false);
+                                }}
+                                className="w-full bg-[var(--primary)] text-black py-5 rounded-2xl font-black text-xl shadow-2xl shadow-[var(--primary)]/20 active:scale-95 transition-transform"
+                            >
+                                UNLOCK FOR ₹999
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
