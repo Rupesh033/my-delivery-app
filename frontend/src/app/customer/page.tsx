@@ -21,6 +21,9 @@ export default function CustomerPage() {
     const [bookingError, setBookingError] = useState('');
     const [selectedVehicle, setSelectedVehicle] = useState('bike');
     const [quotes, setQuotes] = useState<any[]>([]);
+    const [isGeocoding, setIsGeocoding] = useState(false);
+
+    const VEHICLE_OPTIONS = [
 
     const VEHICLE_OPTIONS = [
         { id: 'bike', name: 'Bike', icon: '🏍️', multiplier: 1, description: 'Fast & Affordable' },
@@ -121,28 +124,36 @@ export default function CustomerPage() {
         }
     }, [pickup, drop, fare, session]);
 
-    // ── Handle Drop input (also calculates fare) ────────────────────────────
+    // ── Handle Drop input ──────────────────────────────────────────────────
     const handleDropChange = (val: string) => {
         setDrop(val);
-        if (val.trim()) {
-            // Mock distance: 2-8 km
-            const distance = Math.floor(Math.random() * 6) + 2;
-            const bikeFare = pricing.baseFare + (distance * pricing.perKm);
-            
-            const calculatedQuotes = VEHICLE_OPTIONS.map(v => ({
-                ...v,
-                price: Math.round(bikeFare * v.multiplier)
-            }));
-            
-            setQuotes(calculatedQuotes);
-            setFare(bikeFare); // Default/Old ref
-        } else {
+        if (!val.trim()) {
             setQuotes([]);
             setFare(0);
         }
     };
 
-    // ── Geocoding Logic ────────────────────────────────────────────────────
+    // ── Geocoding & Distance Logic ──────────────────────────────────────────
+    const calculateQuotes = useCallback((distanceInKm: number) => {
+        const bikeFare = pricing.baseFare + (distanceInKm * pricing.perKm);
+        const calculatedQuotes = VEHICLE_OPTIONS.map(v => ({
+            ...v,
+            price: Math.max(v.multiplier * bikeFare, 20).toFixed(0) // Min fare 20
+        }));
+        setQuotes(calculatedQuotes);
+    }, [pricing, VEHICLE_OPTIONS]);
+
+    const getDistance = (c1: [number, number], c2: [number, number]) => {
+        const R = 6371; // km
+        const dLat = (c2[0] - c1[0]) * Math.PI / 180;
+        const dLon = (c2[1] - c1[1]) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(c1[0] * Math.PI / 180) * Math.cos(c2[0] * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    };
+
     const geocode = async (query: string) => {
         if (query.length < 3) return null;
         try {
@@ -157,14 +168,24 @@ export default function CustomerPage() {
         return null;
     };
 
+    // Side effect to update quotes whenever coordinates change
+    useEffect(() => {
+        if (pickupCoords && dropCoords) {
+            const dist = getDistance(pickupCoords, dropCoords);
+            calculateQuotes(dist);
+        }
+    }, [pickupCoords, dropCoords, calculateQuotes]);
+
     // Debounced geocoding for Pickup
     useEffect(() => {
         const timer = setTimeout(async () => {
             if (pickup.trim()) {
+                setIsGeocoding(true);
                 const coords = await geocode(pickup);
                 if (coords) setPickupCoords(coords);
+                setIsGeocoding(false);
             }
-        }, 800);
+        }, 1000);
         return () => clearTimeout(timer);
     }, [pickup]);
 
@@ -172,10 +193,12 @@ export default function CustomerPage() {
     useEffect(() => {
         const timer = setTimeout(async () => {
             if (drop.trim()) {
+                setIsGeocoding(true);
                 const coords = await geocode(drop);
                 if (coords) setDropCoords(coords);
+                setIsGeocoding(false);
             }
-        }, 800);
+        }, 1000);
         return () => clearTimeout(timer);
     }, [drop]);
 
@@ -225,6 +248,16 @@ export default function CustomerPage() {
                             value={drop}
                             onChange={(e) => handleDropChange(e.target.value)}
                         />
+                    </div>
+
+                    <div className="h-48 bg-[#111] rounded-xl overflow-hidden border border-white/5 relative">
+                        {isGeocoding && (
+                            <div className="absolute inset-0 z-10 bg-black/40 backdrop-blur-[2px] flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-[#ffff00]">
+                                <div className="animate-spin w-4 h-4 border-2 border-[#ffff00] border-t-transparent rounded-full mr-2" />
+                                Analyzing Route...
+                            </div>
+                        )}
+                        <MapComponent pickupPos={pickupCoords} dropPos={dropCoords} riderPos={riderCoords} />
                     </div>
 
                     {quotes.length > 0 && (
