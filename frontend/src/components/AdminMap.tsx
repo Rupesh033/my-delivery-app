@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet'
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useState } from 'react';
+import { useMap } from 'react-leaflet';
 
 // Custom icons
 const riderIcon = new L.Icon({
@@ -23,6 +24,17 @@ interface AdminMapProps {
     rides: any[];
 }
 
+// Helper to auto-fit all activity
+function ChangeView({ bounds }: { bounds: any }) {
+    const map = useMap();
+    useEffect(() => {
+        if (bounds && bounds.length > 0) {
+            map.fitBounds(bounds, { padding: [50, 50] });
+        }
+    }, [bounds, map]);
+    return null;
+}
+
 export default function AdminMap({ riders, rides }: AdminMapProps) {
     const [isMounted, setIsMounted] = useState(false);
 
@@ -32,12 +44,19 @@ export default function AdminMap({ riders, rides }: AdminMapProps) {
 
     if (!isMounted) return <div className="h-[500px] w-full bg-gray-900 animate-pulse flex items-center justify-center">Loading Map Engine...</div>;
 
+    const allPoints = [
+        ...riders.filter(r => r.lat && r.lng).map(r => [r.lat, r.lng]),
+        ...rides.filter(r => r.pickupCoords).map(r => r.pickupCoords),
+        ...rides.filter(r => r.dropCoords).map(r => r.dropCoords)
+    ];
+
     return (
         <MapContainer
-            center={[24.1627, 83.8055]}
-            zoom={13}
+            center={[20, 78]}
+            zoom={5}
             style={{ height: '500px', width: '100%', borderRadius: '1rem', border: '1px solid #333' }}
         >
+            <ChangeView bounds={allPoints.length > 0 ? allPoints : null} />
             <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -47,7 +66,7 @@ export default function AdminMap({ riders, rides }: AdminMapProps) {
             {riders.map(rider => (
                 <Marker
                     key={rider.id}
-                    position={[rider.lat || 24.1627, rider.lng || 83.8055]}
+                    position={[rider.lat || 0, rider.lng || 0]}
                     icon={riderIcon}
                 >
                     <Popup>

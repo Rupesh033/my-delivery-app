@@ -98,16 +98,41 @@ export default function RiderPage() {
         };
     }, []); // Single mount — no deps
 
-    // ── Location broadcast (only when online) ──────────────────────────────
+    // ── Location broadcast (using real GPS or fallback simulation) ──────────
     useEffect(() => {
         if (!online) return;
-        const interval = setInterval(() => {
-            const lat = 24.1627 + (Math.random() - 0.5) * 0.01;
-            const lng = 83.8055 + (Math.random() - 0.5) * 0.01;
+
+        let watchId: number;
+
+        const broadcastLocation = (lat: number, lng: number) => {
             socket.emit('updateLocation', { riderId: riderIdRef.current, lat, lng });
-        }, 5000);
-        return () => clearInterval(interval);
-    }, [online]); // Starts/stops cleanly with online status
+        };
+
+        if (navigator.geolocation) {
+            watchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    broadcastLocation(pos.coords.latitude, pos.coords.longitude);
+                },
+                (err) => {
+                    console.warn('[RIDER] Geolocation error, failing back to simulation:', err.message);
+                    // Simulation Fallback: Move randomly around the active ride's pickup location
+                    const baseLat = activeRide?.pickupCoords?.[0] || 20;
+                    const baseLng = activeRide?.pickupCoords?.[1] || 78;
+                    const interval = setInterval(() => {
+                        const simLat = baseLat + (Math.random() - 0.5) * 0.005;
+                        const simLng = baseLng + (Math.random() - 0.5) * 0.005;
+                        broadcastLocation(simLat, simLng);
+                    }, 5000);
+                    return () => clearInterval(interval);
+                },
+                { enableHighAccuracy: true }
+            );
+        }
+
+        return () => {
+            if (watchId) navigator.geolocation.clearWatch(watchId);
+        };
+    }, [online, activeRide?.pickupCoords]); 
 
     // ── Toggle Online/Offline ───────────────────────────────────────────────
     const toggleOnline = useCallback(() => {
