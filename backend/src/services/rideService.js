@@ -29,7 +29,8 @@ function loadDb() {
     return {
         settings: { perKm: 12, baseFare: 30 },
         riders: [
-            { id: 'R1', name: 'Rupesh', role: 'rider', isOnline: true, isApproved: true, lat: 24.1627, lng: 83.8055, vehicle: 'Bike' }
+            { id: 'R1', name: 'Rupesh', role: 'rider', isOnline: true, isApproved: true, lat: 24.1627, lng: 83.8055, vehicle: 'Bike', gender: 'male', rating: 4.8 },
+            { id: 'R2', name: 'Anjali', role: 'rider', isOnline: true, isApproved: true, lat: 24.1600, lng: 83.8100, vehicle: 'Bike', gender: 'female', rating: 4.9 }
         ],
         rides: [],
         users: []
@@ -47,9 +48,21 @@ function saveDb(data) {
 const mockDb = loadDb();
 
 const RideService = {
-    findNearestRider: (pickup) => {
+    findNearestRider: (pickup, options = {}) => {
+        const { isPinkMode, serviceType } = options;
+        
         // Only return approved and online riders
-        return mockDb.riders.find(r => r.isOnline && r.isApproved);
+        return mockDb.riders.find(r => {
+            if (!r.isOnline || !r.isApproved) return false;
+            
+            // Gender filtering for Pink Mode
+            if (isPinkMode && r.gender !== 'female') return false;
+            
+            // Skill/Vehicle filtering for special services
+            if (serviceType === 'assist' && r.vehicle !== 'Bike' && r.vehicle !== 'Auto') return false;
+
+            return true;
+        });
     },
 
     createRide: (customerId, pickup, drop, fare, vehicleType = 'Bike', pickupCoords = [24.1627, 83.8055], dropCoords = [24.1750, 83.8200], serviceType = 'ride') => {

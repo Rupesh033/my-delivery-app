@@ -10,7 +10,8 @@ export default function RiderRegisterPage() {
         name: '',
         phone: '',
         vehicle: 'Bike',
-        city: 'Garhwa'
+        city: 'Garhwa',
+        gender: 'male'
     });
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -96,6 +97,18 @@ export default function RiderRegisterPage() {
                                     <option className="bg-black">Bike</option>
                                     <option className="bg-black">Auto</option>
                                     <option className="bg-black">Cab</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-black uppercase text-gray-500 mb-2 tracking-widest">Gender</label>
+                                <select 
+                                    value={formData.gender}
+                                    onChange={e => setFormData({...formData, gender: e.target.value})}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-6 outline-none focus:border-[#F9C935] transition-colors appearance-none"
+                                >
+                                    <option className="bg-black" value="male">Male Captain</option>
+                                    <option className="bg-black" value="female">Female Captain (Pink Mode Ready)</option>
                                 </select>
                             </div>
 

@@ -25,6 +25,8 @@ export default function RiderLoginPage() {
             
             if (res.ok) {
                 localStorage.setItem('riderId', data.riderId);
+                localStorage.setItem('riderGender', data.gender);
+                localStorage.setItem('riderRating', data.rating.toString());
                 router.push('/rider');
             } else {
                 setError(data.error || 'Login failed');

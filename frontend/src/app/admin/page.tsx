@@ -12,6 +12,7 @@ export default function AdminPage() {
     const [loading, setLoading] = useState(true);
     const [rates, setRates] = useState({ perKm: 12, baseFare: 30 });
     const [sosAlert, setSosAlert] = useState<any>(null);
+    const [angelAlert, setAngelAlert] = useState<any>(null);
 
     const fetchAdminData = useCallback(async () => {
         try {
@@ -42,8 +43,12 @@ export default function AdminPage() {
         socket.on('adminSOSAlert', (data) => {
             console.error('[GOD VIEW] EMERGENCY SOS RECEIVED!!', data);
             setSosAlert(data);
-            // Play sound would go here
-            if ("vibrate" in navigator) navigator.vibrate([500, 200, 500]);
+            if ("vibrate" in navigator) navigator.vibrate([1000, 200, 1000]);
+        });
+
+        socket.on('angelAlert', (data) => {
+            console.warn('[GOD VIEW] ANGEL ALERT: Stationary Ride Detected', data);
+            setAngelAlert(data);
         });
 
         return () => {
@@ -127,6 +132,22 @@ export default function AdminPage() {
                 </div>
             )}
 
+            {angelAlert && (
+                <div className="mb-8 p-6 bg-orange-600 rounded-3xl border-4 border-white animate-pulse flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="text-5xl">👼</div>
+                        <div>
+                            <h2 className="text-2xl font-black italic leading-none text-white">ANGEL ALERT: STATIONARY RIDE</h2>
+                            <p className="text-black font-bold uppercase text-xs mt-1">Ride ID: {angelAlert.rideId} • Stationary for 2+ mins</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-4">
+                        <button onClick={() => setAngelAlert(null)} className="px-6 py-2 bg-black text-white rounded-xl font-bold uppercase text-xs tracking-widest">Dismiss</button>
+                        <button className="px-8 py-3 bg-white text-orange-600 rounded-xl font-black uppercase text-sm shadow-xl">Check Status</button>
+                    </div>
+                </div>
+            )}
+
             {activeTab === 'monitoring' && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -154,9 +175,15 @@ export default function AdminPage() {
                                                 <p className="font-bold text-sm text-[#F9C935]">{ride.id.split('_')[1]}</p>
                                                 <p className="text-[10px] text-gray-500 truncate w-32">{ride.pickup} → {ride.drop}</p>
                                             </div>
-                                            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${ride.status === 'on_ride' ? 'bg-green-500/20 text-green-500' : 'bg-gray-800 text-gray-500'}`}>
-                                                {ride.status}
-                                            </span>
+                                            <div className="text-right flex flex-col items-end gap-1">
+                                                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${ride.status === 'on_ride' ? 'bg-green-500/20 text-green-500' : 'bg-gray-800 text-gray-500'}`}>
+                                                    {ride.status}
+                                                </span>
+                                                <span className="text-[9px] font-bold text-gray-500 uppercase">
+                                                    {ride.serviceType === 'parcel' ? '📦 Parcel' : (ride.serviceType === 'assist' ? '🚨 Assist' : '🏍️ Ride')}
+                                                    {ride.isPinkMode && ' • 🌸 PINK'}
+                                                </span>
+                                            </div>
                                         </div>
                                     ))}
                                     {data.rides.length === 0 && <p className="text-center text-gray-700 py-10 font-bold">No ride history yet.</p>}

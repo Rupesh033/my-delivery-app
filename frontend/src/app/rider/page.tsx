@@ -16,6 +16,8 @@ export default function RiderPage() {
     const [otpError, setOtpError] = useState('');
     const [riderId, setRiderId] = useState<string | null>(null);
     const riderIdRef = useRef<string | null>(null);
+    const [earnings, setEarnings] = useState(1250);
+    const [rating, setRating] = useState(4.8);
 
     useEffect(() => {
         const id = localStorage.getItem('riderId') || 'R1';
@@ -32,8 +34,13 @@ export default function RiderPage() {
     // ── Socket setup – runs once on mount ──────────────────────────────────
     useEffect(() => {
         const id = localStorage.getItem('riderId') || 'R1';
+        const gender = localStorage.getItem('riderGender') || 'male';
+        const rating = localStorage.getItem('riderRating') || '4.5';
+        
+        setRating(parseFloat(rating));
+        
         // @ts-ignore
-        socket.io.opts.query = { role: 'rider', userId: id };
+        socket.io.opts.query = { role: 'rider', userId: id, gender };
         socket.connect();
 
         const onConnect = () => {
@@ -171,34 +178,54 @@ export default function RiderPage() {
     return (
         <div className="min-h-screen bg-black p-6 max-w-md mx-auto">
             {/* Header */}
-            <header className="flex justify-between items-center mb-8">
+            <header className="flex justify-between items-center mb-10">
                 <div>
-                    <h1 className="text-2xl font-black">RIDER HUB</h1>
+                    <h1 className="text-3xl font-black italic tracking-tighter text-[#F9C935]">CAPTAIN HUB</h1>
                     <div className="flex items-center gap-2 mt-1">
                         <div className={`w-2 h-2 rounded-full ${socketConnected ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
-                        <p className="text-[10px] text-gray-500 uppercase font-bold">
-                            {socketConnected ? 'Server Connected' : 'Connecting...'}
+                        <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest leading-none">
+                            {socketConnected ? 'System Live' : 'Offline'}
                         </p>
                     </div>
                 </div>
                 <button
                     onClick={toggleOnline}
-                    className={`px-5 py-2 rounded-full font-bold transition-all ${online ? 'bg-green-500 text-black shadow-lg shadow-green-500/30' : 'bg-gray-800 text-gray-400'
+                    className={`px-6 py-2.5 rounded-2xl font-black transition-all text-xs tracking-widest uppercase ${online ? 'bg-green-500 text-black shadow-xl shadow-green-500/20' : 'bg-[#111] text-gray-600 border border-white/5'
                         }`}
                 >
-                    {online ? '● ONLINE' : '○ OFFLINE'}
+                    {online ? 'Online' : 'Offline'}
                 </button>
             </header>
 
-            {/* Stats */}
+            {/* Premium Stats & Wallet */}
             <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="glass-card p-4">
-                    <p className="text-gray-500 text-xs">Today&apos;s Earnings</p>
-                    <p className="text-2xl font-bold">₹1,240</p>
+                <div className="glass-card p-5 border-l-4 border-[#F9C935] bg-gradient-to-br from-[#111] to-black">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest leading-none mb-1">Earnings</p>
+                            <p className="text-2xl font-black text-white">₹{earnings}</p>
+                        </div>
+                        <button 
+                            onClick={() => {
+                                if (earnings > 0) {
+                                    alert(`Processing Instant Withdrawal of ₹${earnings} to your Bank Account...`);
+                                    setEarnings(0);
+                                } else {
+                                    alert("Wallet khali hai bahi!");
+                                }
+                            }}
+                            className="bg-[#F9C935] text-black w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-lg shadow-[#F9C935]/20 hover:scale-110 active:scale-90 transition-all"
+                        >
+                            💰
+                        </button>
+                    </div>
                 </div>
-                <div className="glass-card p-4">
-                    <p className="text-gray-500 text-xs">Total Rides</p>
-                    <p className="text-2xl font-bold">12</p>
+                <div className="glass-card p-5 border-l-4 border-blue-500 bg-gradient-to-br from-[#111] to-black">
+                    <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest leading-none mb-1">Badge</p>
+                    <div className="flex items-center gap-2">
+                        <p className="text-2xl font-black text-white">GOLD</p>
+                        <span className="text-xl">🏆</span>
+                    </div>
                 </div>
             </div>
 

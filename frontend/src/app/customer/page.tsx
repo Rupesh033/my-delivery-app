@@ -23,12 +23,15 @@ export default function CustomerPage() {
     const [quotes, setQuotes] = useState<any[]>([]);
     const [isGeocoding, setIsGeocoding] = useState(false);
     const [isCommuterPass, setIsCommuterPass] = useState(false);
+    const [isPinkMode, setIsPinkMode] = useState(false);
+    const [showPassStore, setShowPassStore] = useState(false);
 
     const VEHICLE_OPTIONS = [
         { id: 'bike', name: 'Bike', icon: '🏍️', multiplier: 1, description: 'EV Support Available', isEV: true },
         { id: 'auto', name: 'Auto', icon: '🛺', multiplier: 1.5, description: 'Comfortable & Safe' },
         { id: 'cab', name: 'Cab', icon: '🚗', multiplier: 2.5, description: 'Premium & Private' },
         { id: 'parcel', name: 'Parcel', icon: '📦', multiplier: 0.8, description: 'Send Items Quickly' },
+        { id: 'emergency', name: 'Assist', icon: '🚨', multiplier: 1.2, description: 'Fuel/Battery Help' },
     ];
 
     // Map positions
@@ -109,7 +112,8 @@ export default function CustomerPage() {
                     drop: drop.trim(),
                     fare: quotes.find(q => q.id === selectedVehicle)?.price || fare,
                     vehicleType: VEHICLE_OPTIONS.find(v => v.id === selectedVehicle)?.name || 'Bike',
-                    serviceType: selectedVehicle === 'parcel' ? 'parcel' : 'ride',
+                    serviceType: selectedVehicle === 'parcel' ? 'parcel' : (selectedVehicle === 'emergency' ? 'assist' : 'ride'),
+                    isPinkMode,
                     pickupCoords,
                     dropCoords
                 })
@@ -153,6 +157,33 @@ export default function CustomerPage() {
         });
         setQuotes(calculatedQuotes);
     }, [pricing, VEHICLE_OPTIONS, isCommuterPass]);
+
+    // ── Safe-Stop Detection (The "Angel" Feature) ──────────────────────────
+    const [stoppedTimer, setStoppedTimer] = useState(0);
+    const [showSafeStopPopup, setShowSafeStopPopup] = useState(false);
+
+    useEffect(() => {
+        if (step !== 'on_ride') return;
+
+        const interval = setInterval(() => {
+            // If riderCoords haven't changed much (mocked here or comparing prev)
+            // In a real app we'd compare riderCoords with prevRiderCoords
+            setStoppedTimer(prev => {
+                if (prev >= 120) { // 2 minutes
+                    setShowSafeStopPopup(true);
+                    socket.emit('angelAlert', { 
+                        rideId: (rideData as any).id, 
+                        userId: session?.user?.name || 'Guest',
+                        location: pickup // Simplification, would be live pos
+                    });
+                    return 0;
+                }
+                return prev + 10;
+            });
+        }, 10000);
+
+        return () => clearInterval(interval);
+    }, [step]);
 
     const getDistance = (c1: [number, number], c2: [number, number]) => {
         const R = 6371; // km
@@ -270,7 +301,13 @@ export default function CustomerPage() {
                         <button onClick={() => signOut()} className="text-[10px] text-gray-500 uppercase font-bold hover:text-white transition-colors">Sign Out</button>
                     </div>
                 ) : (
-                    <Link href="/login" className="btn-primary text-xs px-4 py-2">Sign In</Link>
+                    <div className="flex items-center gap-3">
+                         <button 
+                            className="bg-[#F9C935] text-black px-4 py-2 rounded-xl text-xs font-black uppercase italic shadow-lg shadow-[#F9C935]/10 hover:scale-105 active:scale-95 transition-all"
+                            onClick={() => alert("Simulating Call: Dialing +91 99999 88888 for Offline Booking...")}
+                        >📞 Call Book</button>
+                        <Link href="/login" className="btn-primary text-xs px-4 py-2">Sign In</Link>
+                    </div>
                 )}
             </header>
 
@@ -299,20 +336,21 @@ export default function CustomerPage() {
                         />
                     </div>
 
-                    {/* Commuter Pass Toggle */}
-                    <div className="bg-[#111] p-4 rounded-2xl border border-white/5 flex justify-between items-center group hover:border-[var(--primary)]/30 transition-colors">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-[var(--primary)]/10 rounded-xl flex items-center justify-center text-xl">💎</div>
-                            <div>
-                                <p className="text-xs font-black uppercase text-white tracking-tighter italic">Commuter Pass</p>
-                                <p className="text-[10px] text-gray-500 font-bold uppercase">20% Discount Applied</p>
-                            </div>
-                        </div>
+                    {/* Pink Mode & Commuter Pass */}
+                    <div className="grid grid-cols-2 gap-3">
                         <button
-                            onClick={() => setIsCommuterPass(!isCommuterPass)}
-                            className={`w-12 h-6 rounded-full p-1 transition-colors ${isCommuterPass ? 'bg-[var(--primary)]' : 'bg-gray-800'}`}
+                            onClick={() => setIsPinkMode(!isPinkMode)}
+                            className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 ${isPinkMode ? 'border-pink-500 bg-pink-500/10 text-pink-500' : 'border-white/5 bg-[#111] text-gray-500'}`}
                         >
-                            <div className={`w-4 h-4 bg-white rounded-full transition-transform ${isCommuterPass ? 'translate-x-6' : 'translate-x-0'}`} />
+                            <span className="text-xl">🌸</span>
+                            <span className="text-[10px] font-black uppercase italic">Pink Mode</span>
+                        </button>
+                        <button
+                            onClick={() => setShowPassStore(true)}
+                            className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 ${isCommuterPass ? 'border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]' : 'border-white/5 bg-[#111] text-gray-500'}`}
+                        >
+                            <span className="text-xl">💎</span>
+                            <span className="text-[10px] font-black uppercase italic">{isCommuterPass ? 'Pass Active' : 'Get Pass'}</span>
                         </button>
                     </div>
 
@@ -440,6 +478,20 @@ export default function CustomerPage() {
                         <span className="w-3 h-3 bg-white rounded-full animate-ping"></span>
                         🔴 EMERGENCY SOS
                     </button>
+                </div>
+            )}
+            {/* Safe-Stop Popup */}
+            {showSafeStopPopup && (
+                <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-6">
+                    <div className="bg-[#111] border-2 border-red-500 p-8 rounded-3xl text-center max-w-xs animate-in zoom-in duration-300">
+                        <div className="text-5xl mb-4">👼</div>
+                        <h2 className="text-xl font-black italic text-white uppercase tracking-tighter">Everything okay?</h2>
+                        <p className="text-gray-400 text-sm mt-2 font-bold p-2">We noticed the bike has stopped for a few minutes. Is everything fine with your ride?</p>
+                        <div className="flex flex-col gap-3 mt-6">
+                            <button onClick={() => setShowSafeStopPopup(false)} className="w-full py-4 bg-green-500 text-black font-black rounded-2xl uppercase text-xs">Yes, I am fine</button>
+                            <button className="w-full py-4 bg-red-600 text-white font-black rounded-2xl uppercase text-xs">Help Me / SOS</button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

@@ -38,7 +38,7 @@ app.get('/api/admin/data', (req, res) => {
 });
 
 app.post('/api/riders/register', (req, res) => {
-    const { name, phone, vehicle } = req.body;
+    const { name, phone, vehicle, gender } = req.body;
     if (!name || !phone) return res.status(400).json({ error: 'Missing information' });
 
     const newRider = {
@@ -50,6 +50,7 @@ app.post('/api/riders/register', (req, res) => {
         isApproved: false,
         lat: 24.1627,
         lng: 83.8055,
+        gender: gender || 'male',
         role: 'rider'
     };
 
@@ -73,7 +74,9 @@ app.post('/api/riders/login', (req, res) => {
         success: true, 
         riderId: rider.id,
         isApproved: rider.isApproved,
-        name: rider.name 
+        name: rider.name,
+        gender: rider.gender || 'male',
+        rating: rider.rating || 4.5
     });
 });
 
@@ -107,15 +110,20 @@ app.post('/api/admin/settings', (req, res) => {
 // ─── Ride Booking REST Endpoint ───────────────────────────────────────────────
 app.post('/api/rides/book', (req, res) => {
     try {
-        const { userId, pickup, drop, fare, vehicleType, serviceType, pickupCoords, dropCoords } = req.body;
+        const { userId, pickup, drop, fare, vehicleType, serviceType, isPinkMode, pickupCoords, dropCoords } = req.body;
         if (!pickup || !drop) {
             return res.status(400).json({ error: 'pickup and drop are required' });
         }
 
         const ride = RideService.createRide(userId || 'guest', pickup, drop, fare || 0, vehicleType || 'Bike', pickupCoords, dropCoords, serviceType || 'ride');
+        ride.isPinkMode = !!isPinkMode;
 
         // Broadcast to riders and admins (Optimized)
-        io.to('riders').emit('newRideRequest', ride);
+        if (ride.isPinkMode) {
+            io.to('riders_female').emit('newRideRequest', ride);
+        } else {
+            io.to('riders').emit('newRideRequest', ride);
+        }
         io.to('admins').emit('systemUpdate', mockDb); // Notify admins of new ride
 
         res.status(201).json({ ride });
@@ -131,9 +139,12 @@ io.on('connection', (socket) => {
     console.log(`[SOCKET] Connected: ${socket.id} | Total: ${io.engine.clientsCount}`);
 
     // Join room based on role if provided in handshake
-    const { role, userId } = socket.handshake.query;
+    const { role, userId, gender } = socket.handshake.query;
     if (role === 'admin') socket.join('admins');
-    if (role === 'rider') socket.join('riders');
+    if (role === 'rider') {
+        socket.join('riders');
+        if (gender === 'female') socket.join('riders_female');
+    }
     if (userId) socket.join(`user_${userId}`);
 
     // ── Admin Registration ──
@@ -243,6 +254,11 @@ io.on('connection', (socket) => {
     socket.on('emergencySOS', (data) => {
         console.warn(`[EMERGENCY] SOS received from Ride ${data.rideId} | User: ${data.userId}`);
         io.to('admins').emit('adminSOSAlert', data);
+    });
+
+    socket.on('angelAlert', (data) => {
+        console.warn(`[ANGEL] Stationary Alert received for Ride ${data.rideId}`);
+        io.to('admins').emit('angelAlert', data);
     });
 
     socket.on('disconnect', (reason) => {
