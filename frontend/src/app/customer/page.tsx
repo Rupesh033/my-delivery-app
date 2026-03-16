@@ -28,9 +28,9 @@ export default function CustomerPage() {
         { id: 'cab', name: 'Cab', icon: '🚗', multiplier: 2.5, description: 'Premium & Private' },
     ];
 
-    // Map positions (Garhwa, Jharkhand defaults)
-    const pickupCoords: [number, number] = [24.1627, 83.8055];
-    const dropCoords: [number, number] = [24.1750, 83.8200];
+    // Map positions
+    const [pickupCoords, setPickupCoords] = useState<[number, number] | undefined>(undefined);
+    const [dropCoords, setDropCoords] = useState<[number, number] | undefined>(undefined);
     const [riderCoords, setRiderCoords] = useState<[number, number] | undefined>(undefined);
     const [pricing, setPricing] = useState({ baseFare: 30, perKm: 12 });
 
@@ -141,6 +141,43 @@ export default function CustomerPage() {
             setFare(0);
         }
     };
+
+    // ── Geocoding Logic ────────────────────────────────────────────────────
+    const geocode = async (query: string) => {
+        if (query.length < 3) return null;
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+            const data = await res.json();
+            if (data && data.length > 0) {
+                return [parseFloat(data[0].lat), parseFloat(data[0].lon)] as [number, number];
+            }
+        } catch (err) {
+            console.error('Geocoding error:', err);
+        }
+        return null;
+    };
+
+    // Debounced geocoding for Pickup
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            if (pickup.trim()) {
+                const coords = await geocode(pickup);
+                if (coords) setPickupCoords(coords);
+            }
+        }, 800);
+        return () => clearTimeout(timer);
+    }, [pickup]);
+
+    // Debounced geocoding for Drop
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            if (drop.trim()) {
+                const coords = await geocode(drop);
+                if (coords) setDropCoords(coords);
+            }
+        }, 800);
+        return () => clearTimeout(timer);
+    }, [drop]);
 
     return (
         <div className="min-h-screen p-6 max-w-md mx-auto">

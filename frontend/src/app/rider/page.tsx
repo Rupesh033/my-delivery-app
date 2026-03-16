@@ -275,7 +275,7 @@ export default function RiderPage() {
                     </button>
 
                     <div className="h-48 mt-6 bg-[#222] rounded-xl overflow-hidden border border-gray-700">
-                        <MapComponent pickupPos={[24.1627, 83.8055]} />
+                        <MapComponent pickupPos={activeRide?.pickupCoords} dropPos={activeRide?.dropCoords} />
                     </div>
                 </div>
             )}
@@ -287,7 +287,7 @@ export default function RiderPage() {
                     <h2 className="text-lg font-bold text-green-400 mb-1">Ride in Progress</h2>
                     <p className="text-gray-400 text-sm mb-6">Drop at: <span className="text-white font-bold">{activeRide?.drop}</span></p>
                     <div className="h-48 mb-6 bg-[#222] rounded-xl overflow-hidden border border-gray-700">
-                        <MapComponent dropPos={[24.1750, 83.8200]} />
+                        <MapComponent pickupPos={activeRide?.pickupCoords} dropPos={activeRide?.dropCoords} />
                     </div>
                     <button onClick={handleComplete} className="w-full bg-green-500 text-black py-3 rounded-xl font-bold hover:bg-green-400 transition-colors">
                         Complete Ride ✓
