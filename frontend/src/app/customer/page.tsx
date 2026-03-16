@@ -24,8 +24,6 @@ export default function CustomerPage() {
     const [isGeocoding, setIsGeocoding] = useState(false);
 
     const VEHICLE_OPTIONS = [
-
-    const VEHICLE_OPTIONS = [
         { id: 'bike', name: 'Bike', icon: '🏍️', multiplier: 1, description: 'Fast & Affordable' },
         { id: 'auto', name: 'Auto', icon: '🛺', multiplier: 1.5, description: 'Comfortable & Safe' },
         { id: 'cab', name: 'Cab', icon: '🚗', multiplier: 2.5, description: 'Premium & Private' },
